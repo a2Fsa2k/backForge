@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Telemedicine — MediConnect Doctor</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .call-card { background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; border-left: 4px solid var(--blue); margin-bottom: 14px; display: flex; align-items: center; gap: 16px; transition: box-shadow .2s; }
+    .call-card:hover { box-shadow: var(--shadow-md); }
+    .call-card.scheduled { border-left-color: var(--blue); }
+    .call-card.live { border-left-color: var(--danger); animation: live-pulse 2s infinite; }
+    .call-card.completed { border-left-color: var(--success); }
+    .call-card.cancelled { border-left-color: var(--text-muted); }
+    @keyframes live-pulse { 0%,100%{box-shadow:var(--shadow);} 50%{box-shadow:0 0 0 4px rgba(239,68,68,.15);} }
+    .call-type-icon { width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; background: var(--blue-light); }
+    .live-badge { display: inline-flex; align-items: center; gap: 4px; background: var(--danger); color: #fff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+    .live-dot { width: 6px; height: 6px; border-radius: 50%; background: #fff; animation: blink 1s infinite; }
+    @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:.3;} }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="logo-brand"><span class="logo-icon">🩺</span> MediConnect</div><div class="logo-sub">Doctor Dashboard</div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-group-label">Main</div>
+      <a href="dashboard.html" class="nav-link"><span class="nav-icon">🏠</span> Dashboard</a>
+      <a href="patients.html" class="nav-link"><span class="nav-icon">👥</span> Patients</a>
+      <a href="appointments.html" class="nav-link"><span class="nav-icon">📅</span> Appointments</a>
+      <div class="nav-group-label">Clinical</div>
+      <a href="prescriptions.html" class="nav-link"><span class="nav-icon">💊</span> Prescriptions</a>
+      <a href="medical-records.html" class="nav-link"><span class="nav-icon">📁</span> Medical Records</a>
+      <a href="lab-orders.html" class="nav-link"><span class="nav-icon">🔬</span> Lab Orders</a>
+      <a href="telemedicine.html" class="nav-link active"><span class="nav-icon">📹</span> Telemedicine</a>
+      <div class="nav-group-label">Practice</div>
+      <a href="schedule.html" class="nav-link"><span class="nav-icon">📆</span> Schedule</a>
+      <a href="billing.html" class="nav-link"><span class="nav-icon">💳</span> Billing</a>
+      <a href="profile.html" class="nav-link"><span class="nav-icon">👤</span> Profile</a>
+      <a href="notifications.html" class="nav-link"><span class="nav-icon">🔔</span> Notifications</a>
+    </nav>
+    <div class="sidebar-footer"><div class="sidebar-user" onclick="logout()"><div class="s-avatar" id="sidebar-avatar">D</div><div><div class="s-user-name" id="sidebar-user-name">Dr. Doctor</div><div class="s-user-role">Sign out →</div></div></div></div>
+  </aside>
+
+  <main class="main-content">
+    <header class="top-bar">
+      <div class="top-bar-title">Telemedicine</div>
+      <div class="top-bar-actions">
+        <button class="btn btn-primary btn-sm" onclick="openModal('scheduleModal')">+ Schedule Video Call</button>
+        <button class="icon-btn" onclick="window.location.href='notifications.html'">🔔</button>
+      </div>
+    </header>
+
+    <div class="page-content">
+
+      <!-- Stats -->
+      <div class="stats-grid" style="margin-bottom:22px;">
+        <div class="stat-card"><div class="stat-icon si-blue">📹</div><div><div class="stat-val" id="s-upcoming">—</div><div class="stat-lbl">Upcoming Sessions</div></div></div>
+        <div class="stat-card"><div class="stat-icon si-green">✅</div><div><div class="stat-val" id="s-completed">—</div><div class="stat-lbl">Completed This Month</div></div></div>
+        <div class="stat-card"><div class="stat-icon si-orange">⏱️</div><div><div class="stat-val" id="s-duration">—</div><div class="stat-lbl">Total Hours</div></div></div>
+      </div>
+
+      <div class="tabs page-tabs">
+        <button class="tab-btn active" data-tab="tab-upcoming">Upcoming</button>
+        <button class="tab-btn" data-tab="tab-live">Live Now</button>
+        <button class="tab-btn" data-tab="tab-past">Past Sessions</button>
+      </div>
+
+      <!-- Upcoming -->
+      <div id="tab-upcoming" class="tab-pane active">
+        <div id="upcoming-sessions">
+          <div class="empty-state"><div class="empty-icon">📹</div><h3>No upcoming sessions</h3><p>Schedule a video consultation with a patient</p><button class="btn btn-primary" onclick="openModal('scheduleModal')">+ Schedule Now</button></div>
+        </div>
+      </div>
+
+      <!-- Live Now -->
+      <div id="tab-live" class="tab-pane">
+        <div id="live-sessions">
+          <div class="empty-state"><div class="empty-icon">🟢</div><h3>No active sessions</h3><p>Sessions that are currently live will appear here</p></div>
+        </div>
+      </div>
+
+      <!-- Past Sessions -->
+      <div id="tab-past" class="tab-pane">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Past Video Consultations</span></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Patient</th><th>Date & Time</th><th>Duration</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="past-tbody">
+                <tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-muted);">No past sessions</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Schedule Modal -->
+<div class="modal-overlay" id="scheduleModal">
+  <div class="modal modal-lg">
+    <div class="modal-header"><span class="modal-title">Schedule Video Consultation</span><button class="modal-close" onclick="closeModal('scheduleModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Patient</label><select class="form-control" id="tele-patient"><option value="">Select patient…</option></select></div>
+        <div class="form-group"><label class="form-label">Linked Appointment (optional)</label><select class="form-control" id="tele-appointment"><option value="">None</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Date & Time</label><input type="datetime-local" class="form-control" id="tele-datetime" /></div>
+        <div class="form-group"><label class="form-label">Duration (minutes)</label>
+          <select class="form-control" id="tele-duration">
+            <option value="15">15 minutes</option>
+            <option value="30" selected>30 minutes</option>
+            <option value="45">45 minutes</option>
+            <option value="60">60 minutes</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Notes for Patient</label><textarea class="form-control" id="tele-notes" rows="2" placeholder="Prepare your past reports, medication list, etc."></textarea></div>
+      <div class="alert alert-info mb-0"><span>ℹ️</span> A video call link will be generated and sent to the patient automatically once scheduled.</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('scheduleModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="scheduleSession()">Schedule Session</button>
+    </div>
+  </div>
+</div>
+
+<!-- Session Notes Modal -->
+<div class="modal-overlay" id="notesModal">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Session Notes</span><button class="modal-close" onclick="closeModal('notesModal')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="notes-session-id" />
+      <div class="form-group"><label class="form-label">Consultation Summary</label><textarea class="form-control" id="session-notes" rows="4" placeholder="Summary of the consultation…"></textarea></div>
+      <div class="form-group"><label class="form-label">Follow-up Required</label>
+        <select class="form-control" id="followup">
+          <option value="">None</option>
+          <option value="1_week">1 week</option>
+          <option value="2_weeks">2 weeks</option>
+          <option value="1_month">1 month</option>
+          <option value="as_needed">As needed</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('notesModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveSessionNotes()">Save Notes</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="js/app.js"></script>
+<script>
+  function logout() { auth.clear(); window.location.href = 'index.html'; }
+
+  function renderCallCard(s, showJoin = false) {
+    return `
+      <div class="call-card ${s.status}">
+        <div class="call-type-icon">📹</div>
+        <div style="flex:1;">
+          <div class="flex items-center gap-2 mb-1">
+            <div class="fw-700" style="font-size:15px;">${s.patient_name}</div>
+            ${s.status === 'live' ? '<div class="live-badge"><div class="live-dot"></div> LIVE</div>' : ''}
+          </div>
+          <div class="text-muted text-sm mb-2">${fmtDate(s.scheduled_at)} · ${fmtTime(s.scheduled_at)} · ${s.duration_mins || 30} min</div>
+          ${s.notes ? `<div class="text-xs text-muted">📝 ${s.notes}</div>` : ''}
+        </div>
+        <div style="display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap;">
+          ${showJoin || s.status === 'live' ? `<button class="btn btn-danger" onclick="joinSession(${s.id})">📹 Join Now</button>` : ''}
+          ${s.status === 'scheduled' ? `<button class="btn btn-secondary btn-sm" onclick="cancelSession(${s.id})">Cancel</button>` : ''}
+          ${s.status === 'completed' ? `<button class="btn btn-outline btn-sm" onclick="addNotes(${s.id})">Notes</button>` : ''}
+        </div>
+      </div>`;
+  }
+
+  async function loadPatientOptions() {
+    try {
+      const data = await GET('/doctor/patients');
+      const pts = Array.isArray(data) ? data : data.patients || [];
+      document.getElementById('tele-patient').innerHTML = '<option value="">Select patient…</option>' + pts.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+    } catch {}
+  }
+
+  // GET /api/doctor/telemedicine/sessions?status=scheduled
+  async function loadSessions() {
+    try {
+      const [upcoming, past] = await Promise.all([
+        GET('/doctor/telemedicine/sessions?status=scheduled'),
+        GET('/doctor/telemedicine/sessions?status=completed')
+      ]);
+      const up = Array.isArray(upcoming) ? upcoming : upcoming.sessions || [];
+      const live = up.filter(s => s.status === 'live');
+      const scheduled = up.filter(s => s.status === 'scheduled');
+      const comp = Array.isArray(past) ? past : past.sessions || [];
+
+      document.getElementById('s-upcoming').textContent = scheduled.length;
+      document.getElementById('s-completed').textContent = comp.length;
+      document.getElementById('s-duration').textContent = comp.reduce((s, c) => s + (c.duration_mins || 30), 0) / 60 + ' hrs';
+
+      document.getElementById('upcoming-sessions').innerHTML = scheduled.length
+        ? scheduled.map(s => renderCallCard(s)).join('') : '<div class="empty-state"><div class="empty-icon">📹</div><h3>No upcoming sessions</h3></div>';
+      document.getElementById('live-sessions').innerHTML = live.length
+        ? live.map(s => renderCallCard(s, true)).join('') : '<div class="empty-state"><div class="empty-icon">🟢</div><h3>No active sessions</h3></div>';
+
+      document.getElementById('past-tbody').innerHTML = comp.length
+        ? comp.map(s => `
+          <tr>
+            <td class="fw-600">${s.patient_name}</td>
+            <td>${fmtDate(s.scheduled_at)} · ${fmtTime(s.scheduled_at)}</td>
+            <td>${s.actual_duration || s.duration_mins || '—'} min</td>
+            <td><span class="badge badge-success">Completed</span></td>
+            <td>
+              <button class="btn btn-secondary btn-sm" onclick="addNotes(${s.id})">View Notes</button>
+              <button class="btn btn-blue btn-sm" onclick="window.location.href='billing.html'">Invoice</button>
+            </td>
+          </tr>`).join('')
+        : '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-muted);">No past sessions</td></tr>';
+    } catch (err) { console.error(err.message); }
+  }
+
+  // POST /api/doctor/telemedicine/sessions
+  async function scheduleSession() {
+    const patient = document.getElementById('tele-patient').value;
+    const dt = document.getElementById('tele-datetime').value;
+    if (!patient || !dt) { toast('Fill required fields', 'error'); return; }
+    try {
+      await POST('/doctor/telemedicine/sessions', {
+        patient_id: patient,
+        appointment_id: document.getElementById('tele-appointment').value || null,
+        scheduled_at: dt,
+        duration_mins: parseInt(document.getElementById('tele-duration').value),
+        notes: document.getElementById('tele-notes').value
+      });
+      closeModal('scheduleModal');
+      toast('Video session scheduled!', 'success');
+      loadSessions();
+    } catch (err) { toast(err.message || 'Failed', 'error'); }
+  }
+
+  // POST /api/doctor/telemedicine/sessions/:id/join
+  async function joinSession(id) {
+    try {
+      const data = await POST(`/doctor/telemedicine/sessions/${id}/join`);
+      if (data.join_url) window.open(data.join_url, '_blank');
+      else toast('Join URL not available', 'error');
+    } catch (err) { toast(err.message || 'Failed to join', 'error'); }
+  }
+
+  async function cancelSession(id) {
+    if (!confirm('Cancel this video session?')) return;
+    try {
+      await PUT(`/doctor/telemedicine/sessions/${id}/end`);
+      toast('Session cancelled', 'warning');
+      loadSessions();
+    } catch (err) { toast(err.message, 'error'); }
+  }
+
+  function addNotes(id) {
+    document.getElementById('notes-session-id').value = id;
+    openModal('notesModal');
+  }
+
+  async function saveSessionNotes() {
+    const id = document.getElementById('notes-session-id').value;
+    try {
+      await PUT(`/doctor/telemedicine/sessions/${id}`, {
+        notes: document.getElementById('session-notes').value,
+        followup: document.getElementById('followup').value
+      });
+      closeModal('notesModal');
+      toast('Notes saved!', 'success');
+    } catch (err) { toast(err.message || 'Failed', 'error'); }
+  }
+
+  // Set min datetime to now
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  document.getElementById('tele-datetime').min = now.toISOString().slice(0, 16);
+
+  initTabs();
+  loadPatientOptions();
+  loadSessions();
+</script>
+</body>
+</html>

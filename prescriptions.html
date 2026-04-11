@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prescriptions — MediConnect Doctor</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="logo-brand"><span class="logo-icon">🩺</span> MediConnect</div><div class="logo-sub">Doctor Dashboard</div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-group-label">Main</div>
+      <a href="dashboard.html" class="nav-link"><span class="nav-icon">🏠</span> Dashboard</a>
+      <a href="patients.html" class="nav-link"><span class="nav-icon">👥</span> Patients</a>
+      <a href="appointments.html" class="nav-link"><span class="nav-icon">📅</span> Appointments</a>
+      <div class="nav-group-label">Clinical</div>
+      <a href="prescriptions.html" class="nav-link active"><span class="nav-icon">💊</span> Prescriptions</a>
+      <a href="medical-records.html" class="nav-link"><span class="nav-icon">📁</span> Medical Records</a>
+      <a href="lab-orders.html" class="nav-link"><span class="nav-icon">🔬</span> Lab Orders</a>
+      <a href="telemedicine.html" class="nav-link"><span class="nav-icon">📹</span> Telemedicine</a>
+      <div class="nav-group-label">Practice</div>
+      <a href="schedule.html" class="nav-link"><span class="nav-icon">📆</span> Schedule</a>
+      <a href="billing.html" class="nav-link"><span class="nav-icon">💳</span> Billing</a>
+      <a href="profile.html" class="nav-link"><span class="nav-icon">👤</span> Profile</a>
+      <a href="notifications.html" class="nav-link"><span class="nav-icon">🔔</span> Notifications</a>
+    </nav>
+    <div class="sidebar-footer"><div class="sidebar-user" onclick="logout()"><div class="s-avatar" id="sidebar-avatar">D</div><div><div class="s-user-name" id="sidebar-user-name">Dr. Doctor</div><div class="s-user-role">Sign out →</div></div></div></div>
+  </aside>
+
+  <main class="main-content">
+    <header class="top-bar">
+      <div class="top-bar-title">Prescriptions</div>
+      <div class="top-bar-actions">
+        <button class="btn btn-primary btn-sm" onclick="openModal('writeRxModal')">+ Write Prescription</button>
+        <button class="icon-btn" onclick="window.location.href='notifications.html'">🔔</button>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <!-- Filter -->
+      <div class="filter-bar">
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" placeholder="Search by patient name or diagnosis…" />
+        </div>
+        <select class="form-control" id="patientFilter" style="width:auto;min-width:200px;" onchange="loadRx()">
+          <option value="">All Patients</option>
+        </select>
+        <button class="btn btn-secondary" onclick="loadRx()">Search</button>
+      </div>
+
+      <!-- Prescriptions Table -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">All Prescriptions</span></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Patient</th><th>Diagnosis</th><th>Medicines</th><th>Date</th><th>Valid Until</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="rx-tbody">
+              <tr><td colspan="7" style="text-align:center;padding:48px;color:var(--text-muted);">No prescriptions found</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Write Prescription Modal -->
+<div class="modal-overlay" id="writeRxModal">
+  <div class="modal modal-xl">
+    <div class="modal-header"><span class="modal-title">Write Prescription</span><button class="modal-close" onclick="closeModal('writeRxModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row mb-4">
+        <div class="form-group">
+          <label class="form-label">Patient</label>
+          <select class="form-control" id="rx-patient">
+            <option value="">Select patient…</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Linked Appointment (optional)</label>
+          <select class="form-control" id="rx-appointment"><option value="">None</option></select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Diagnosis</label>
+        <input type="text" class="form-control" id="rx-diagnosis" placeholder="Enter diagnosis or condition…" />
+      </div>
+
+      <div class="flex justify-between items-center mb-3">
+        <div class="fw-700">Medicines</div>
+        <button class="btn btn-outline btn-sm" onclick="addMedRow()">+ Add Medicine</button>
+      </div>
+
+      <div id="medicines-container">
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:8px;margin-bottom:6px;padding:0 12px;">
+          <span class="text-xs text-muted fw-700" style="text-transform:uppercase;">Medicine Name</span>
+          <span class="text-xs text-muted fw-700" style="text-transform:uppercase;">Dosage</span>
+          <span class="text-xs text-muted fw-700" style="text-transform:uppercase;">Frequency</span>
+          <span class="text-xs text-muted fw-700" style="text-transform:uppercase;">Duration</span>
+          <span></span>
+        </div>
+        <!-- Medicine rows injected here -->
+      </div>
+
+      <div class="divider"></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">General Instructions</label>
+          <textarea class="form-control" id="rx-instructions" rows="2" placeholder="e.g. Take after meals, Avoid alcohol…"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Validity (Days)</label>
+          <input type="number" class="form-control" id="rx-valid" value="30" min="1" />
+          <div class="form-hint">Prescription expires after these many days</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('writeRxModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitRx()">Issue Prescription</button>
+    </div>
+  </div>
+</div>
+
+<!-- View Rx Modal -->
+<div class="modal-overlay" id="viewRxModal">
+  <div class="modal modal-lg">
+    <div class="modal-header"><span class="modal-title">Prescription Details</span><button class="modal-close" onclick="closeModal('viewRxModal')">✕</button></div>
+    <div class="modal-body" id="viewRxBody">Loading…</div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('viewRxModal')">Close</button>
+      <button class="btn btn-danger" id="delete-rx-btn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="js/app.js"></script>
+<script>
+  function logout() { auth.clear(); window.location.href = 'index.html'; }
+  let medCount = 0;
+
+  function addMedRow(med = {}) {
+    medCount++;
+    const div = document.createElement('div');
+    div.className = 'rx-medicine-row';
+    div.id = `med-row-${medCount}`;
+    div.innerHTML = `
+      <input type="text" class="form-control" name="med_name" placeholder="Medicine name" value="${med.name || ''}" />
+      <input type="text" class="form-control" name="med_dosage" placeholder="e.g. 500mg" value="${med.dosage || ''}" />
+      <select class="form-control" name="med_freq">
+        <option ${med.frequency==='Once daily'?'selected':''}>Once daily</option>
+        <option ${med.frequency==='Twice daily'?'selected':''}>Twice daily</option>
+        <option ${med.frequency==='Thrice daily'?'selected':''}>Thrice daily</option>
+        <option ${med.frequency==='Before meals'?'selected':''}>Before meals</option>
+        <option ${med.frequency==='After meals'?'selected':''}>After meals</option>
+        <option ${med.frequency==='At bedtime'?'selected':''}>At bedtime</option>
+        <option ${med.frequency==='As needed'?'selected':''}>As needed</option>
+      </select>
+      <input type="text" class="form-control" name="med_duration" placeholder="e.g. 7 days" value="${med.duration || ''}" />
+      <button class="btn btn-danger btn-sm" onclick="document.getElementById('med-row-${medCount}').remove()">✕</button>`;
+    document.getElementById('medicines-container').appendChild(div);
+  }
+
+  // Load patients for dropdown
+  async function loadPatientOptions() {
+    try {
+      const data = await GET('/doctor/patients');
+      const pts = Array.isArray(data) ? data : data.patients || [];
+      const opts = pts.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+      document.getElementById('rx-patient').innerHTML = '<option value="">Select patient…</option>' + opts;
+      document.getElementById('patientFilter').innerHTML = '<option value="">All Patients</option>' + opts;
+    } catch {}
+  }
+
+  // GET /api/doctor/prescriptions?patient_id=&search=
+  async function loadRx() {
+    const patient = document.getElementById('patientFilter').value;
+    const search = document.getElementById('searchInput').value;
+    try {
+      const data = await GET(`/doctor/prescriptions?patient_id=${patient}&search=${encodeURIComponent(search)}`);
+      const rxList = Array.isArray(data) ? data : data.prescriptions || [];
+      document.getElementById('rx-tbody').innerHTML = rxList.length
+        ? rxList.map(rx => `
+          <tr>
+            <td class="fw-600">${rx.patient_name}</td>
+            <td>${rx.diagnosis || '—'}</td>
+            <td>${rx.medicines?.length || 0} medicine(s)</td>
+            <td>${fmtDate(rx.date)}</td>
+            <td>${fmtDate(rx.valid_until)}</td>
+            <td><span class="badge ${rx.status === 'active' ? 'badge-success' : 'badge-secondary'}">${rx.status}</span></td>
+            <td>
+              <div style="display:flex;gap:6px;">
+                <button class="btn btn-secondary btn-sm" onclick="viewRx(${rx.id})">View</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteRx(${rx.id})">Delete</button>
+              </div>
+            </td>
+          </tr>`).join('')
+        : '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted);">No prescriptions found</td></tr>';
+    } catch (err) { toast(err.message, 'error'); }
+  }
+
+  // POST /api/doctor/prescriptions
+  async function submitRx() {
+    const rows = document.querySelectorAll('#medicines-container .rx-medicine-row');
+    const medicines = Array.from(rows).map(row => ({
+      name: row.querySelector('[name=med_name]').value,
+      dosage: row.querySelector('[name=med_dosage]').value,
+      frequency: row.querySelector('[name=med_freq]').value,
+      duration: row.querySelector('[name=med_duration]').value
+    })).filter(m => m.name);
+
+    if (!document.getElementById('rx-patient').value) { toast('Select a patient', 'error'); return; }
+    if (!medicines.length) { toast('Add at least one medicine', 'error'); return; }
+
+    const payload = {
+      patient_id: document.getElementById('rx-patient').value,
+      appointment_id: document.getElementById('rx-appointment').value || null,
+      diagnosis: document.getElementById('rx-diagnosis').value,
+      medicines,
+      instructions: document.getElementById('rx-instructions').value,
+      valid_days: parseInt(document.getElementById('rx-valid').value) || 30
+    };
+    try {
+      await POST('/doctor/prescriptions', payload);
+      closeModal('writeRxModal');
+      toast('Prescription issued!', 'success');
+      loadRx();
+    } catch (err) { toast(err.message || 'Failed', 'error'); }
+  }
+
+  // GET /api/doctor/prescriptions/:id
+  async function viewRx(id) {
+    openModal('viewRxModal');
+    try {
+      const rx = await GET(`/doctor/prescriptions/${id}`);
+      document.getElementById('viewRxBody').innerHTML = `
+        <div style="background:var(--bg);border-radius:10px;padding:16px;margin-bottom:16px;">
+          <div class="flex justify-between items-center mb-2">
+            <div><div class="fw-700" style="font-size:16px;">Prescription #${rx.id}</div><div class="text-muted text-sm">Patient: ${rx.patient_name}</div></div>
+            <span class="badge ${rx.status === 'active' ? 'badge-success' : 'badge-secondary'}">${rx.status}</span>
+          </div>
+          <div class="form-row"><div><div class="text-xs text-muted">Diagnosis</div><div class="fw-600">${rx.diagnosis || '—'}</div></div><div><div class="text-xs text-muted">Date</div><div class="fw-600">${fmtDate(rx.date)}</div></div><div><div class="text-xs text-muted">Valid Until</div><div class="fw-600">${fmtDate(rx.valid_until)}</div></div></div>
+        </div>
+        <h4 class="fw-700 mb-3">Medicines</h4>
+        ${(rx.medicines || []).map(m => `
+          <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg);border-radius:8px;margin-bottom:8px;">
+            <span style="font-size:22px;">💊</span>
+            <div style="flex:1;"><div class="fw-700">${m.name} <span class="pill" style="font-size:10px;">${m.dosage || ''}</span></div><div class="text-sm text-muted">${m.frequency} · ${m.duration}</div></div>
+          </div>`).join('')}
+        ${rx.instructions ? `<div class="alert alert-warning mt-4"><span>📝</span> ${rx.instructions}</div>` : ''}`;
+      document.getElementById('delete-rx-btn').onclick = () => deleteRx(rx.id);
+    } catch (err) {
+      document.getElementById('viewRxBody').innerHTML = `<p class="text-danger">${err.message}</p>`;
+    }
+  }
+
+  // DELETE /api/doctor/prescriptions/:id
+  async function deleteRx(id) {
+    if (!confirm('Delete this prescription?')) return;
+    try {
+      await DEL(`/doctor/prescriptions/${id}`);
+      closeModal('viewRxModal');
+      toast('Prescription deleted', 'success');
+      loadRx();
+    } catch (err) { toast(err.message || 'Failed', 'error'); }
+  }
+
+  addMedRow();
+  loadPatientOptions();
+  loadRx();
+  document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') loadRx(); });
+</script>
+</body>
+</html>

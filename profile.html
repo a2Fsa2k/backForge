@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile — MediConnect Doctor</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="logo-brand"><span class="logo-icon">🩺</span> MediConnect</div><div class="logo-sub">Doctor Dashboard</div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-group-label">Main</div>
+      <a href="dashboard.html" class="nav-link"><span class="nav-icon">🏠</span> Dashboard</a>
+      <a href="patients.html" class="nav-link"><span class="nav-icon">👥</span> Patients</a>
+      <a href="appointments.html" class="nav-link"><span class="nav-icon">📅</span> Appointments</a>
+      <div class="nav-group-label">Clinical</div>
+      <a href="prescriptions.html" class="nav-link"><span class="nav-icon">💊</span> Prescriptions</a>
+      <a href="medical-records.html" class="nav-link"><span class="nav-icon">📁</span> Medical Records</a>
+      <a href="lab-orders.html" class="nav-link"><span class="nav-icon">🔬</span> Lab Orders</a>
+      <a href="telemedicine.html" class="nav-link"><span class="nav-icon">📹</span> Telemedicine</a>
+      <div class="nav-group-label">Practice</div>
+      <a href="schedule.html" class="nav-link"><span class="nav-icon">📆</span> Schedule</a>
+      <a href="billing.html" class="nav-link"><span class="nav-icon">💳</span> Billing</a>
+      <a href="profile.html" class="nav-link active"><span class="nav-icon">👤</span> Profile</a>
+      <a href="notifications.html" class="nav-link"><span class="nav-icon">🔔</span> Notifications</a>
+    </nav>
+    <div class="sidebar-footer"><div class="sidebar-user" onclick="logout()"><div class="s-avatar" id="sidebar-avatar">D</div><div><div class="s-user-name" id="sidebar-user-name">Dr. Doctor</div><div class="s-user-role">Sign out →</div></div></div></div>
+  </aside>
+
+  <main class="main-content">
+    <header class="top-bar">
+      <div class="top-bar-title">My Profile</div>
+    </header>
+
+    <div class="page-content">
+      <!-- Profile Banner -->
+      <div class="card mb-22" style="margin-bottom:22px;">
+        <div class="card-body" style="display:flex;align-items:center;gap:24px;padding:28px;">
+          <div style="width:90px;height:90px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:40px;border:3px solid var(--primary-border);" id="profile-pic">🩺</div>
+          <div style="flex:1;">
+            <h2 style="font-size:22px;font-weight:800;" id="prof-name">Dr. Loading…</h2>
+            <div class="text-primary fw-600" id="prof-spec">—</div>
+            <div class="text-muted text-sm" id="prof-hospital">—</div>
+            <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+              <span class="pill" id="prof-exp">📅 —</span>
+              <span class="pill" id="prof-license">🪪 License: —</span>
+              <span class="pill" id="prof-fee">💳 Fee: —</span>
+            </div>
+          </div>
+          <button class="btn btn-outline" onclick="openModal('editProfModal')">✏️ Edit Profile</button>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <!-- Personal Info -->
+        <div class="card">
+          <div class="card-header"><span class="card-title">👤 Personal Information</span></div>
+          <div class="card-body">
+            <div class="form-group"><label class="form-label">Full Name</label><div id="pi-name" class="fw-600">—</div></div>
+            <div class="form-group"><label class="form-label">Email</label><div id="pi-email" class="fw-600">—</div></div>
+            <div class="form-group"><label class="form-label">Phone</label><div id="pi-phone" class="fw-600">—</div></div>
+            <div class="form-group"><label class="form-label">Clinic / Hospital</label><div id="pi-hospital" class="fw-600">—</div></div>
+            <div class="form-group"><label class="form-label">Address</label><div id="pi-address" class="fw-600">—</div></div>
+          </div>
+        </div>
+
+        <!-- Professional Info -->
+        <div class="card">
+          <div class="card-header"><span class="card-title">🩺 Professional Details</span><button class="btn btn-outline btn-sm" onclick="openModal('editProfModal')">Edit</button></div>
+          <div class="card-body">
+            <div class="form-group"><label class="form-label">Specialization</label><div id="pp-spec" class="fw-600">—</div></div>
+            <div class="form-group"><label class="form-label">License Number</label><div id="pp-license" class="fw-600">—</div></div>
+            <div class="form-group"><label class="form-label">Years of Experience</label><div id="pp-exp" class="fw-600">—</div></div>
+            <div class="form-group"><label class="form-label">Consultation Fee</label><div id="pp-fee" class="fw-600">—</div></div>
+            <div class="form-group"><label class="form-label">Languages</label><div id="pp-lang" class="fw-600">—</div></div>
+            <div class="form-group"><label class="form-label">Qualifications</label><div id="pp-qual" class="fw-600">—</div></div>
+          </div>
+        </div>
+
+        <!-- Bio -->
+        <div class="card" style="grid-column:1/-1;">
+          <div class="card-header"><span class="card-title">📝 About / Bio</span><button class="btn btn-outline btn-sm" onclick="openModal('editBioModal')">Edit</button></div>
+          <div class="card-body">
+            <p id="pp-bio" class="text-light" style="line-height:1.7;">No bio added yet. Add a professional summary to help patients know more about you.</p>
+          </div>
+        </div>
+
+        <!-- Change Password -->
+        <div class="card">
+          <div class="card-header"><span class="card-title">🔒 Change Password</span></div>
+          <div class="card-body">
+            <form id="passForm">
+              <div class="form-group"><label class="form-label">Current Password</label><input type="password" class="form-control" id="curr-pass" /></div>
+              <div class="form-group"><label class="form-label">New Password</label><input type="password" class="form-control" id="new-pass" placeholder="Min. 8 characters" /></div>
+              <div class="form-group"><label class="form-label">Confirm New Password</label><input type="password" class="form-control" id="confirm-pass" /></div>
+              <button type="submit" class="btn btn-primary w-full">Update Password</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Account -->
+        <div class="card">
+          <div class="card-header"><span class="card-title">⚙️ Account Settings</span></div>
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label">Profile Visibility</label>
+              <select class="form-control" id="visibility" onchange="updateVisibility()">
+                <option value="public">Public (visible to patients)</option>
+                <option value="private">Private</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email Notifications</label>
+              <select class="form-control" id="notif-pref">
+                <option>All notifications</option>
+                <option>Appointments only</option>
+                <option>None</option>
+              </select>
+            </div>
+            <button class="btn btn-primary w-full mb-2" onclick="saveSettings()">Save Settings</button>
+            <button class="btn btn-danger w-full" onclick="logout()">Sign Out</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal-overlay" id="editProfModal">
+  <div class="modal modal-lg">
+    <div class="modal-header"><span class="modal-title">Edit Professional Profile</span><button class="modal-close" onclick="closeModal('editProfModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Full Name</label><input type="text" class="form-control" id="ep-name" /></div>
+        <div class="form-group"><label class="form-label">Phone</label><input type="tel" class="form-control" id="ep-phone" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Specialization</label>
+          <select class="form-control" id="ep-spec">
+            <option>General Medicine</option><option>Cardiology</option><option>Neurology</option><option>Orthopedics</option>
+            <option>Pediatrics</option><option>Gynecology</option><option>Dermatology</option><option>Psychiatry</option>
+            <option>Oncology</option><option>Endocrinology</option><option>Ophthalmology</option><option>ENT</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">License Number</label><input type="text" class="form-control" id="ep-license" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Years of Experience</label><input type="number" class="form-control" id="ep-exp" min="0" /></div>
+        <div class="form-group"><label class="form-label">Consultation Fee (₹)</label><input type="number" class="form-control" id="ep-fee" min="0" /></div>
+      </div>
+      <div class="form-group"><label class="form-label">Qualifications (MBBS, MD, etc.)</label><input type="text" class="form-control" id="ep-qual" placeholder="e.g. MBBS, MD (Internal Medicine)" /></div>
+      <div class="form-group"><label class="form-label">Hospital / Clinic</label><input type="text" class="form-control" id="ep-hospital" /></div>
+      <div class="form-group"><label class="form-label">Clinic Address</label><textarea class="form-control" id="ep-address" rows="2"></textarea></div>
+      <div class="form-group"><label class="form-label">Languages Spoken</label><input type="text" class="form-control" id="ep-lang" placeholder="e.g. English, Hindi, Tamil" /></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('editProfModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveProfile()">Save Profile</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Bio Modal -->
+<div class="modal-overlay" id="editBioModal">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Edit Bio</span><button class="modal-close" onclick="closeModal('editBioModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Professional Summary</label><textarea class="form-control" id="ep-bio" rows="6" placeholder="Write a brief professional bio visible to patients…"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('editBioModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveBio()">Save Bio</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="js/app.js"></script>
+<script>
+  function logout() { auth.clear(); window.location.href = 'index.html'; }
+
+  // GET /api/doctor/profile
+  async function loadProfile() {
+    try {
+      const d = await GET('/doctor/profile');
+      document.getElementById('prof-name').textContent = `Dr. ${d.name}`;
+      document.getElementById('prof-spec').textContent = d.specialty || '—';
+      document.getElementById('prof-hospital').textContent = d.hospital || '—';
+      document.getElementById('prof-exp').textContent = `📅 ${d.experience || '0'} yrs experience`;
+      document.getElementById('prof-license').textContent = `🪪 License: ${d.license_no || '—'}`;
+      document.getElementById('prof-fee').textContent = `💳 Fee: ₹${d.fee || '—'}`;
+      document.getElementById('pi-name').textContent = `Dr. ${d.name}`;
+      document.getElementById('pi-email').textContent = d.email;
+      document.getElementById('pi-phone').textContent = d.phone || '—';
+      document.getElementById('pi-hospital').textContent = d.hospital || '—';
+      document.getElementById('pi-address').textContent = d.address || '—';
+      document.getElementById('pp-spec').textContent = d.specialty || '—';
+      document.getElementById('pp-license').textContent = d.license_no || '—';
+      document.getElementById('pp-exp').textContent = `${d.experience || '0'} years`;
+      document.getElementById('pp-fee').textContent = d.fee ? `₹${d.fee}` : '—';
+      document.getElementById('pp-lang').textContent = d.languages || '—';
+      document.getElementById('pp-qual').textContent = d.qualifications || '—';
+      document.getElementById('pp-bio').textContent = d.bio || 'No bio added yet.';
+      document.getElementById('sidebar-avatar').textContent = (d.name || 'D').charAt(0).toUpperCase();
+      document.getElementById('sidebar-user-name').textContent = `Dr. ${d.name}`;
+
+      // Prefill modal
+      document.getElementById('ep-name').value = d.name || '';
+      document.getElementById('ep-phone').value = d.phone || '';
+      document.getElementById('ep-spec').value = d.specialty || 'General Medicine';
+      document.getElementById('ep-license').value = d.license_no || '';
+      document.getElementById('ep-exp').value = d.experience || '';
+      document.getElementById('ep-fee').value = d.fee || '';
+      document.getElementById('ep-qual').value = d.qualifications || '';
+      document.getElementById('ep-hospital').value = d.hospital || '';
+      document.getElementById('ep-address').value = d.address || '';
+      document.getElementById('ep-lang').value = d.languages || '';
+      document.getElementById('ep-bio').value = d.bio || '';
+    } catch (err) { console.error(err.message); }
+  }
+
+  // PUT /api/doctor/profile
+  async function saveProfile() {
+    const payload = {
+      name: document.getElementById('ep-name').value,
+      phone: document.getElementById('ep-phone').value,
+      specialty: document.getElementById('ep-spec').value,
+      license_no: document.getElementById('ep-license').value,
+      experience: document.getElementById('ep-exp').value,
+      fee: document.getElementById('ep-fee').value,
+      qualifications: document.getElementById('ep-qual').value,
+      hospital: document.getElementById('ep-hospital').value,
+      address: document.getElementById('ep-address').value,
+      languages: document.getElementById('ep-lang').value
+    };
+    try {
+      await PUT('/doctor/profile', payload);
+      closeModal('editProfModal');
+      toast('Profile updated!', 'success');
+      loadProfile();
+    } catch (err) { toast(err.message || 'Failed', 'error'); }
+  }
+
+  async function saveBio() {
+    try {
+      await PUT('/doctor/profile', { bio: document.getElementById('ep-bio').value });
+      closeModal('editBioModal');
+      toast('Bio updated!', 'success');
+      loadProfile();
+    } catch (err) { toast(err.message || 'Failed', 'error'); }
+  }
+
+  document.getElementById('passForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const np = document.getElementById('new-pass').value;
+    const cp = document.getElementById('confirm-pass').value;
+    if (np !== cp) { toast('Passwords do not match', 'error'); return; }
+    try {
+      await PUT('/doctor/profile/password', { current_password: document.getElementById('curr-pass').value, new_password: np });
+      toast('Password updated!', 'success');
+      e.target.reset();
+    } catch (err) { toast(err.message || 'Failed', 'error'); }
+  });
+
+  async function saveSettings() { toast('Settings saved', 'success'); }
+
+  loadProfile();
+</script>
+</body>
+</html>

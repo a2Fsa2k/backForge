@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Patients — MediConnect Doctor</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="logo-brand"><span class="logo-icon">🩺</span> MediConnect</div><div class="logo-sub">Doctor Dashboard</div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-group-label">Main</div>
+      <a href="dashboard.html" class="nav-link"><span class="nav-icon">🏠</span> Dashboard</a>
+      <a href="patients.html" class="nav-link active"><span class="nav-icon">👥</span> Patients</a>
+      <a href="appointments.html" class="nav-link"><span class="nav-icon">📅</span> Appointments</a>
+      <div class="nav-group-label">Clinical</div>
+      <a href="prescriptions.html" class="nav-link"><span class="nav-icon">💊</span> Prescriptions</a>
+      <a href="medical-records.html" class="nav-link"><span class="nav-icon">📁</span> Medical Records</a>
+      <a href="lab-orders.html" class="nav-link"><span class="nav-icon">🔬</span> Lab Orders</a>
+      <a href="telemedicine.html" class="nav-link"><span class="nav-icon">📹</span> Telemedicine</a>
+      <div class="nav-group-label">Practice</div>
+      <a href="schedule.html" class="nav-link"><span class="nav-icon">📆</span> Schedule</a>
+      <a href="billing.html" class="nav-link"><span class="nav-icon">💳</span> Billing</a>
+      <a href="profile.html" class="nav-link"><span class="nav-icon">👤</span> Profile</a>
+      <a href="notifications.html" class="nav-link"><span class="nav-icon">🔔</span> Notifications</a>
+    </nav>
+    <div class="sidebar-footer"><div class="sidebar-user" onclick="logout()"><div class="s-avatar" id="sidebar-avatar">D</div><div><div class="s-user-name" id="sidebar-user-name">Dr. Doctor</div><div class="s-user-role">Sign out →</div></div></div></div>
+  </aside>
+
+  <main class="main-content">
+    <header class="top-bar">
+      <div class="top-bar-title">My Patients</div>
+      <div class="top-bar-actions">
+        <button class="icon-btn" onclick="window.location.href='notifications.html'">🔔</button>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <!-- Filter Bar -->
+      <div class="filter-bar">
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" placeholder="Search patients by name, phone…" />
+        </div>
+        <select class="form-control" id="sortFilter" style="width:auto;min-width:180px;" onchange="loadPatients()">
+          <option value="recent">Recently Visited</option>
+          <option value="name_asc">Name A–Z</option>
+          <option value="name_desc">Name Z–A</option>
+          <option value="appointments">Most Appointments</option>
+        </select>
+        <button class="btn btn-secondary" onclick="loadPatients()">Search</button>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid" style="margin-bottom:22px;">
+        <div class="stat-card"><div class="stat-icon si-green">👥</div><div><div class="stat-val" id="total-pts">—</div><div class="stat-lbl">Total Patients</div></div></div>
+        <div class="stat-card"><div class="stat-icon si-blue">📅</div><div><div class="stat-val" id="new-pts">—</div><div class="stat-lbl">New This Month</div></div></div>
+        <div class="stat-card"><div class="stat-icon si-orange">🔁</div><div><div class="stat-val" id="returning-pts">—</div><div class="stat-lbl">Returning Patients</div></div></div>
+      </div>
+
+      <!-- Patient List -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">Patient List</span><span class="text-muted text-sm" id="pt-count">0 patients</span></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Patient</th><th>Age / Gender</th><th>Phone</th><th>Blood Group</th><th>Last Visit</th><th>Total Visits</th><th>Actions</th></tr></thead>
+            <tbody id="patients-tbody">
+              <tr><td colspan="7" style="text-align:center;padding:48px;color:var(--text-muted);">Loading patients…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Patient Detail Modal -->
+<div class="modal-overlay" id="patientModal">
+  <div class="modal modal-xl">
+    <div class="modal-header"><span class="modal-title">Patient Profile</span><button class="modal-close" onclick="closeModal('patientModal')">✕</button></div>
+    <div class="modal-body" id="patientModalBody">Loading…</div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('patientModal')">Close</button>
+      <button class="btn btn-blue" onclick="orderLab()">🔬 Order Lab</button>
+      <button class="btn btn-primary" onclick="writePrescription()">💊 Write Prescription</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="js/app.js"></script>
+<script>
+  function logout() { auth.clear(); window.location.href = 'index.html'; }
+  let selectedPatientId = null;
+
+  // GET /api/doctor/patients?search=&sort=
+  async function loadPatients() {
+    const search = document.getElementById('searchInput').value;
+    const sort = document.getElementById('sortFilter').value;
+    try {
+      const data = await GET(`/doctor/patients?search=${encodeURIComponent(search)}&sort=${sort}`);
+      const pts = Array.isArray(data) ? data : data.patients || [];
+      document.getElementById('pt-count').textContent = `${pts.length} patients`;
+      document.getElementById('total-pts').textContent = pts.length;
+      if (!pts.length) {
+        document.getElementById('patients-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:48px;color:var(--text-muted);">No patients found</td></tr>';
+        return;
+      }
+      document.getElementById('patients-tbody').innerHTML = pts.map(p => `
+        <tr>
+          <td>
+            <div class="flex items-center gap-3">
+              <div class="p-avatar" style="width:38px;height:38px;font-size:16px;flex-shrink:0;">👤</div>
+              <div><div class="fw-600">${p.name}</div><div class="text-xs text-muted">${p.email || '—'}</div></div>
+            </div>
+          </td>
+          <td>${p.age || '—'} / ${p.gender || '—'}</td>
+          <td>${p.phone || '—'}</td>
+          <td><span class="badge badge-primary">${p.blood_group || '—'}</span></td>
+          <td>${fmtDate(p.last_visit)}</td>
+          <td class="fw-600">${p.total_visits || 0}</td>
+          <td>
+            <div style="display:flex;gap:6px;">
+              <button class="btn btn-secondary btn-sm" onclick="viewPatient(${p.id})">View</button>
+              <button class="btn btn-primary btn-sm" onclick="selectedPatientId=${p.id};window.location.href='prescriptions.html'">Prescribe</button>
+            </div>
+          </td>
+        </tr>`).join('');
+    } catch (err) { toast(err.message, 'error'); }
+  }
+
+  // GET /api/doctor/patients/:id
+  async function viewPatient(id) {
+    selectedPatientId = id;
+    openModal('patientModal');
+    try {
+      const p = await GET(`/doctor/patients/${id}`);
+      document.getElementById('patientModalBody').innerHTML = `
+        <div style="display:flex;gap:20px;align-items:flex-start;margin-bottom:20px;padding:16px;background:var(--bg);border-radius:10px;">
+          <div class="p-avatar" style="width:64px;height:64px;font-size:28px;flex-shrink:0;">👤</div>
+          <div style="flex:1;">
+            <h3 style="font-size:18px;font-weight:800;">${p.name}</h3>
+            <div class="text-muted text-sm" style="margin:4px 0;">${p.email} · ${p.phone}</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+              <span class="pill">🎂 Age: ${p.age || '—'}</span>
+              <span class="pill">⚥ ${p.gender || '—'}</span>
+              <span class="pill">🩸 ${p.blood_group || '—'}</span>
+              <span class="pill">⚖️ ${p.weight ? p.weight + ' kg' : '—'}</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-row mb-4">
+          <div><div class="fw-700 text-sm mb-2">Allergies</div><p class="text-light text-sm">${p.allergies || 'None'}</p></div>
+          <div><div class="fw-700 text-sm mb-2">Chronic Conditions</div><p class="text-light text-sm">${p.conditions || 'None'}</p></div>
+        </div>
+        <div class="tabs"><button class="tab-btn active" data-tab="pt-appts">Appointments (${p.appointments?.length || 0})</button><button class="tab-btn" data-tab="pt-rx">Prescriptions (${p.prescriptions?.length || 0})</button><button class="tab-btn" data-tab="pt-records">Records (${p.records?.length || 0})</button></div>
+        <div id="pt-appts" class="tab-pane active">
+          ${p.appointments?.length ? `<table style="width:100%;border-collapse:collapse;">${p.appointments.slice(0,5).map(a=>`<tr><td style="padding:8px;border-bottom:1px solid var(--border);">${fmtDate(a.date)}</td><td style="padding:8px;border-bottom:1px solid var(--border);">${a.time}</td><td style="padding:8px;border-bottom:1px solid var(--border);"><span class="badge badge-secondary">${a.status}</span></td></tr>`).join('')}</table>` : '<div class="empty-state" style="padding:20px;">No appointments</div>'}
+        </div>
+        <div id="pt-rx" class="tab-pane">
+          ${p.prescriptions?.length ? p.prescriptions.slice(0,4).map(rx=>`<div style="padding:10px;background:var(--bg);border-radius:8px;margin-bottom:8px;"><div class="fw-600">${rx.diagnosis || 'Prescription'}</div><div class="text-xs text-muted">${fmtDate(rx.date)}</div></div>`).join('') : '<div class="empty-state" style="padding:20px;">No prescriptions</div>'}
+        </div>
+        <div id="pt-records" class="tab-pane">
+          ${p.records?.length ? p.records.slice(0,4).map(r=>`<div style="padding:10px;background:var(--bg);border-radius:8px;margin-bottom:8px;"><div class="fw-600">📄 ${r.title}</div><div class="text-xs text-muted">${r.type} · ${fmtDate(r.date)}</div></div>`).join('') : '<div class="empty-state" style="padding:20px;">No records uploaded</div>'}
+        </div>`;
+      initTabs();
+    } catch (err) {
+      document.getElementById('patientModalBody').innerHTML = `<p class="text-danger">${err.message}</p>`;
+    }
+  }
+
+  function writePrescription() { closeModal('patientModal'); window.location.href = 'prescriptions.html'; }
+  function orderLab() { closeModal('patientModal'); window.location.href = 'lab-orders.html'; }
+
+  loadPatients();
+  document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') loadPatients(); });
+</script>
+</body>
+</html>

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Schedule — MediConnect Doctor</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .week-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 12px; }
+    .day-col { background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+    .day-header { padding: 12px; background: var(--bg); border-bottom: 1px solid var(--border); text-align: center; font-weight: 700; font-size: 13px; }
+    .day-header.today { background: var(--primary); color: #fff; }
+    .day-slots { padding: 8px; display: flex; flex-direction: column; gap: 4px; min-height: 120px; }
+    .slot-pill { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; text-align: center; cursor: pointer; }
+    .slot-free { background: var(--primary-light); color: var(--primary); }
+    .slot-booked { background: #FFF7ED; color: #92400E; }
+    .slot-blocked { background: var(--danger-light); color: var(--danger); }
+    .avail-toggle { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-bottom: 1px solid var(--border); }
+    .toggle-switch { position: relative; width: 40px; height: 22px; }
+    .toggle-switch input { display: none; }
+    .toggle-slider { position: absolute; inset: 0; background: var(--border); border-radius: 22px; cursor: pointer; transition: .2s; }
+    .toggle-switch input:checked + .toggle-slider { background: var(--primary); }
+    .toggle-slider::before { content: ''; position: absolute; width: 16px; height: 16px; background: #fff; border-radius: 50%; top: 3px; left: 3px; transition: .2s; }
+    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(18px); }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="logo-brand"><span class="logo-icon">🩺</span> MediConnect</div><div class="logo-sub">Doctor Dashboard</div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-group-label">Main</div>
+      <a href="dashboard.html" class="nav-link"><span class="nav-icon">🏠</span> Dashboard</a>
+      <a href="patients.html" class="nav-link"><span class="nav-icon">👥</span> Patients</a>
+      <a href="appointments.html" class="nav-link"><span class="nav-icon">📅</span> Appointments</a>
+      <div class="nav-group-label">Clinical</div>
+      <a href="prescriptions.html" class="nav-link"><span class="nav-icon">💊</span> Prescriptions</a>
+      <a href="medical-records.html" class="nav-link"><span class="nav-icon">📁</span> Medical Records</a>
+      <a href="lab-orders.html" class="nav-link"><span class="nav-icon">🔬</span> Lab Orders</a>
+      <a href="telemedicine.html" class="nav-link"><span class="nav-icon">📹</span> Telemedicine</a>
+      <div class="nav-group-label">Practice</div>
+      <a href="schedule.html" class="nav-link active"><span class="nav-icon">📆</span> Schedule</a>
+      <a href="billing.html" class="nav-link"><span class="nav-icon">💳</span> Billing</a>
+      <a href="profile.html" class="nav-link"><span class="nav-icon">👤</span> Profile</a>
+      <a href="notifications.html" class="nav-link"><span class="nav-icon">🔔</span> Notifications</a>
+    </nav>
+    <div class="sidebar-footer"><div class="sidebar-user" onclick="logout()"><div class="s-avatar" id="sidebar-avatar">D</div><div><div class="s-user-name" id="sidebar-user-name">Dr. Doctor</div><div class="s-user-role">Sign out →</div></div></div></div>
+  </aside>
+
+  <main class="main-content">
+    <header class="top-bar">
+      <div class="top-bar-title">Schedule Management</div>
+      <div class="top-bar-actions">
+        <button class="btn btn-primary btn-sm" onclick="openModal('availModal')">⚙️ Set Availability</button>
+        <button class="btn btn-secondary btn-sm" onclick="openModal('blockModal')">🚫 Block Date</button>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <div class="tabs page-tabs">
+        <button class="tab-btn active" data-tab="tab-weekly">Weekly View</button>
+        <button class="tab-btn" data-tab="tab-settings">Availability Settings</button>
+        <button class="tab-btn" data-tab="tab-blocked">Blocked Dates</button>
+      </div>
+
+      <!-- Weekly -->
+      <div id="tab-weekly" class="tab-pane active">
+        <div class="card mb-22" style="margin-bottom:20px;">
+          <div class="card-header">
+            <button class="btn btn-ghost btn-sm" onclick="changeWeek(-1)">← Prev</button>
+            <span class="fw-700" id="week-label">This Week</span>
+            <button class="btn btn-ghost btn-sm" onclick="changeWeek(1)">Next →</button>
+          </div>
+        </div>
+        <div class="week-grid" id="week-grid">
+          <!-- Days injected by JS -->
+        </div>
+      </div>
+
+      <!-- Availability Settings -->
+      <div id="tab-settings" class="tab-pane">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Weekly Availability</span><button class="btn btn-primary btn-sm" onclick="saveAvailability()">Save Changes</button></div>
+          <div id="avail-settings">
+            <!-- Days injected by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Blocked Dates -->
+      <div id="tab-blocked" class="tab-pane">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Blocked Dates</span><button class="btn btn-primary btn-sm" onclick="openModal('blockModal')">+ Block Date</button></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>Reason</th><th>Blocked On</th><th>Actions</th></tr></thead>
+              <tbody id="blocked-tbody">
+                <tr><td colspan="4" style="text-align:center;padding:40px;color:var(--text-muted);">No blocked dates</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Availability Modal -->
+<div class="modal-overlay" id="availModal">
+  <div class="modal modal-lg">
+    <div class="modal-header"><span class="modal-title">Set Availability</span><button class="modal-close" onclick="closeModal('availModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="alert alert-info mb-4"><span>ℹ️</span> Set your default working hours for each day of the week.</div>
+      <div class="form-row mb-4">
+        <div class="form-group"><label class="form-label">Slot Duration (minutes)</label>
+          <select class="form-control" id="slot-duration"><option value="15">15 min</option><option value="20">20 min</option><option value="30" selected>30 min</option><option value="45">45 min</option><option value="60">60 min</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Max Appointments / Day</label>
+          <input type="number" class="form-control" id="max-appts" value="20" min="1" max="50" />
+        </div>
+      </div>
+      ${['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].map((d, i) => `
+        <div class="avail-toggle">
+          <div class="flex items-center gap-3">
+            <label class="toggle-switch"><input type="checkbox" id="day-${i}" ${i < 5 ? 'checked' : ''} /><span class="toggle-slider"></span></label>
+            <span class="fw-600">${d}</span>
+          </div>
+          <div class="flex gap-3 items-center">
+            <input type="time" class="form-control" id="start-${i}" value="${i < 5 ? '09:00' : '10:00'}" style="width:120px;" />
+            <span class="text-muted">to</span>
+            <input type="time" class="form-control" id="end-${i}" value="${i < 5 ? '17:00' : '13:00'}" style="width:120px;" />
+          </div>
+        </div>`).join('')}
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('availModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitAvailability()">Save Availability</button>
+    </div>
+  </div>
+</div>
+
+<!-- Block Date Modal -->
+<div class="modal-overlay" id="blockModal">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Block Date</span><button class="modal-close" onclick="closeModal('blockModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Date to Block</label><input type="date" class="form-control" id="block-date" /></div>
+      <div class="form-group"><label class="form-label">Reason (optional)</label>
+        <select class="form-control" id="block-reason">
+          <option>Vacation / Leave</option><option>Personal emergency</option><option>Conference / CME</option><option>Holiday</option><option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('blockModal')">Cancel</button>
+      <button class="btn btn-danger" onclick="submitBlock()">Block This Date</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="js/app.js"></script>
+<script>
+  function logout() { auth.clear(); window.location.href = 'index.html'; }
+
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const fullDays = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  let weekOffset = 0;
+
+  function getWeekDates(offset) {
+    const today = new Date();
+    const dow = today.getDay();
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - dow + 1 + offset * 7);
+    return Array.from({length:7}, (_,i) => { const d = new Date(monday); d.setDate(monday.getDate()+i); return d; });
+  }
+
+  function changeWeek(dir) { weekOffset += dir; renderWeekView(); }
+
+  function renderWeekView() {
+    const weekDates = getWeekDates(weekOffset);
+    const today = new Date().toDateString();
+    document.getElementById('week-label').textContent = `${weekDates[0].toLocaleDateString('en-IN',{day:'2-digit',month:'short'})} — ${weekDates[6].toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}`;
+    document.getElementById('week-grid').innerHTML = weekDates.map(d => `
+      <div class="day-col">
+        <div class="day-header ${d.toDateString()===today ? 'today' : ''}">${days[d.getDay()]}<br/><span style="font-weight:400;font-size:11px;">${d.getDate()}</span></div>
+        <div class="day-slots" id="slots-${d.toISOString().split('T')[0]}">
+          <div style="color:var(--text-muted);font-size:11px;text-align:center;padding:8px;">Loading…</div>
+        </div>
+      </div>`).join('');
+    weekDates.forEach(d => loadSlotsForDate(d.toISOString().split('T')[0]));
+  }
+
+  // GET /api/doctor/schedule/slots?date=
+  async function loadSlotsForDate(date) {
+    const el = document.getElementById(`slots-${date}`);
+    if (!el) return;
+    try {
+      const data = await GET(`/doctor/schedule/slots?date=${date}`);
+      const slots = Array.isArray(data) ? data : data.slots || [];
+      el.innerHTML = slots.length
+        ? slots.map(s => `<div class="slot-pill ${s.status === 'booked' ? 'slot-booked' : s.status === 'blocked' ? 'slot-blocked' : 'slot-free'}" title="${s.patient_name || s.status}">${s.time}</div>`).join('')
+        : '<div style="color:var(--text-muted);font-size:11px;text-align:center;padding:8px;">No slots</div>';
+    } catch {
+      el.innerHTML = '<div style="color:var(--text-muted);font-size:11px;text-align:center;padding:8px;">—</div>';
+    }
+  }
+
+  // PUT /api/doctor/schedule
+  async function submitAvailability() {
+    const availability = {};
+    fullDays.forEach((d, i) => {
+      const isActive = document.getElementById(`day-${i}`)?.checked;
+      availability[d.toLowerCase()] = isActive ? {
+        active: true,
+        start: document.getElementById(`start-${i}`)?.value,
+        end: document.getElementById(`end-${i}`)?.value
+      } : { active: false };
+    });
+    try {
+      await PUT('/doctor/schedule', { availability, slot_duration: document.getElementById('slot-duration').value, max_appointments: document.getElementById('max-appts').value });
+      closeModal('availModal');
+      toast('Availability updated!', 'success');
+      renderWeekView();
+    } catch (err) { toast(err.message || 'Failed', 'error'); }
+  }
+
+  function saveAvailability() { openModal('availModal'); }
+
+  // POST /api/doctor/schedule/block
+  async function submitBlock() {
+    const date = document.getElementById('block-date').value;
+    const reason = document.getElementById('block-reason').value;
+    if (!date) { toast('Select a date', 'error'); return; }
+    try {
+      await POST('/doctor/schedule/block', { date, reason });
+      closeModal('blockModal');
+      toast('Date blocked', 'success');
+      loadBlockedDates();
+    } catch (err) { toast(err.message || 'Failed', 'error'); }
+  }
+
+  // GET /api/doctor/schedule?month=
+  async function loadBlockedDates() {
+    try {
+      const data = await GET('/doctor/schedule');
+      const blocked = data.blocked_dates || [];
+      document.getElementById('blocked-tbody').innerHTML = blocked.length
+        ? blocked.map(b => `
+          <tr>
+            <td class="fw-600">${fmtDate(b.date)}</td>
+            <td>${b.reason || '—'}</td>
+            <td>${fmtDate(b.created_at)}</td>
+            <td><button class="btn btn-danger btn-sm" onclick="unblockDate(${b.id})">Remove</button></td>
+          </tr>`).join('')
+        : '<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--text-muted);">No blocked dates</td></tr>';
+    } catch {}
+  }
+
+  // DELETE /api/doctor/schedule/block/:id
+  async function unblockDate(id) {
+    try {
+      await DEL(`/doctor/schedule/block/${id}`);
+      toast('Date unblocked', 'success');
+      loadBlockedDates();
+    } catch (err) { toast(err.message, 'error'); }
+  }
+
+  initTabs();
+  renderWeekView();
+  loadBlockedDates();
+
+  // Build availability settings UI
+  document.getElementById('avail-settings').innerHTML = fullDays.map((d, i) => `
+    <div class="avail-toggle">
+      <div class="flex items-center gap-3">
+        <label class="toggle-switch"><input type="checkbox" id="avs-${i}" ${i < 5 ? 'checked' : ''} /><span class="toggle-slider"></span></label>
+        <span class="fw-600">${d}</span>
+      </div>
+      <div class="flex gap-3 items-center">
+        <input type="time" class="form-control" id="avs-start-${i}" value="${i < 5 ? '09:00' : '10:00'}" style="width:120px;" />
+        <span class="text-muted">to</span>
+        <input type="time" class="form-control" id="avs-end-${i}" value="${i < 5 ? '17:00' : '13:00'}" style="width:120px;" />
+      </div>
+    </div>`).join('');
+</script>
+</body>
+</html>

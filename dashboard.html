@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — MediConnect Doctor</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="logo-brand"><span class="logo-icon">🩺</span> MediConnect</div><div class="logo-sub">Doctor Dashboard</div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-group-label">Main</div>
+      <a href="dashboard.html" class="nav-link active"><span class="nav-icon">🏠</span> Dashboard</a>
+      <a href="patients.html" class="nav-link"><span class="nav-icon">👥</span> Patients</a>
+      <a href="appointments.html" class="nav-link"><span class="nav-icon">📅</span> Appointments</a>
+      <div class="nav-group-label">Clinical</div>
+      <a href="prescriptions.html" class="nav-link"><span class="nav-icon">💊</span> Prescriptions</a>
+      <a href="medical-records.html" class="nav-link"><span class="nav-icon">📁</span> Medical Records</a>
+      <a href="lab-orders.html" class="nav-link"><span class="nav-icon">🔬</span> Lab Orders</a>
+      <a href="telemedicine.html" class="nav-link"><span class="nav-icon">📹</span> Telemedicine</a>
+      <div class="nav-group-label">Practice</div>
+      <a href="schedule.html" class="nav-link"><span class="nav-icon">📆</span> Schedule</a>
+      <a href="billing.html" class="nav-link"><span class="nav-icon">💳</span> Billing</a>
+      <a href="profile.html" class="nav-link"><span class="nav-icon">👤</span> Profile</a>
+      <a href="notifications.html" class="nav-link"><span class="nav-icon">🔔</span> Notifications <span class="nav-badge">4</span></a>
+    </nav>
+    <div class="sidebar-footer"><div class="sidebar-user" onclick="logout()"><div class="s-avatar" id="sidebar-avatar">D</div><div><div class="s-user-name" id="sidebar-user-name">Dr. Doctor</div><div class="s-user-role">Sign out →</div></div></div></div>
+  </aside>
+
+  <main class="main-content">
+    <header class="top-bar">
+      <div class="top-bar-title">Dashboard</div>
+      <div class="top-bar-actions">
+        <button class="btn btn-primary btn-sm" onclick="window.location.href='prescriptions.html'">+ New Prescription</button>
+        <button class="icon-btn" onclick="window.location.href='notifications.html'">🔔<span class="notif-dot"></span></button>
+      </div>
+    </header>
+
+    <div class="page-content">
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-icon si-blue">📅</div><div><div class="stat-val" id="s-today">—</div><div class="stat-lbl">Today's Appointments</div></div></div>
+        <div class="stat-card"><div class="stat-icon si-green">👥</div><div><div class="stat-val" id="s-patients">—</div><div class="stat-lbl">Total Patients</div></div></div>
+        <div class="stat-card"><div class="stat-icon si-orange">⏳</div><div><div class="stat-val" id="s-pending">—</div><div class="stat-lbl">Pending Requests</div></div></div>
+        <div class="stat-card"><div class="stat-icon si-purple">💊</div><div><div class="stat-val" id="s-rx">—</div><div class="stat-lbl">Prescriptions This Month</div></div></div>
+        <div class="stat-card"><div class="stat-icon si-red">💳</div><div><div class="stat-val" id="s-revenue">—</div><div class="stat-lbl">Revenue This Month</div></div></div>
+      </div>
+
+      <div class="grid-2">
+        <!-- Today's Schedule -->
+        <div class="card">
+          <div class="card-header"><span class="card-title">📅 Today's Schedule</span><a href="appointments.html" class="btn btn-outline btn-sm">View All</a></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Time</th><th>Patient</th><th>Type</th><th>Status</th><th>Action</th></tr></thead>
+              <tbody id="today-schedule">
+                <tr><td colspan="5" style="text-align:center;padding:36px;color:var(--text-muted);">No appointments scheduled today</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Recent Patients -->
+        <div class="card">
+          <div class="card-header"><span class="card-title">👥 Recent Patients</span><a href="patients.html" class="btn btn-outline btn-sm">All Patients</a></div>
+          <div class="card-body" id="recent-patients">
+            <div class="empty-state" style="padding:24px 0;"><div class="empty-icon">👥</div><h3>No patients yet</h3></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <!-- Pending Lab Results -->
+        <div class="card">
+          <div class="card-header"><span class="card-title">🔬 Pending Lab Results</span><a href="lab-orders.html" class="btn btn-outline btn-sm">View All</a></div>
+          <div class="card-body" id="pending-labs">
+            <div class="empty-state" style="padding:24px 0;"><div class="empty-icon">🔬</div><h3>No pending results</h3></div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+          <div class="card-header"><span class="card-title">⚡ Quick Actions</span></div>
+          <div class="card-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <button class="btn btn-primary" onclick="window.location.href='prescriptions.html'">💊 Write Prescription</button>
+              <button class="btn btn-blue" onclick="window.location.href='lab-orders.html'">🔬 Order Lab Test</button>
+              <button class="btn btn-secondary" onclick="window.location.href='medical-records.html'">📁 Upload Record</button>
+              <button class="btn btn-secondary" onclick="window.location.href='telemedicine.html'">📹 Schedule Video Call</button>
+              <button class="btn btn-secondary" onclick="window.location.href='billing.html'">🧾 Generate Invoice</button>
+              <button class="btn btn-secondary" onclick="window.location.href='schedule.html'">📆 Manage Schedule</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="js/app.js"></script>
+<script>
+  function logout() { auth.clear(); window.location.href = 'index.html'; }
+
+  // GET /api/doctor/dashboard
+  async function loadDashboard() {
+    try {
+      const data = await GET('/doctor/dashboard');
+      document.getElementById('s-today').textContent = data.stats?.today_appointments ?? 0;
+      document.getElementById('s-patients').textContent = data.stats?.total_patients ?? 0;
+      document.getElementById('s-pending').textContent = data.stats?.pending_requests ?? 0;
+      document.getElementById('s-rx').textContent = data.stats?.prescriptions_month ?? 0;
+      document.getElementById('s-revenue').textContent = data.stats?.revenue_month ? `₹${data.stats.revenue_month}` : '₹0';
+
+      if (data.today_appointments?.length) {
+        document.getElementById('today-schedule').innerHTML = data.today_appointments.map(a => `
+          <tr>
+            <td class="fw-600">${a.time}</td>
+            <td><div class="fw-600">${a.patient_name}</div><div class="text-xs text-muted">${a.type}</div></td>
+            <td><span class="pill">${a.consultation_type || 'In-clinic'}</span></td>
+            <td><span class="appt-status-dot dot-${a.status}"></span><span>${a.status}</span></td>
+            <td><button class="btn btn-primary btn-sm" onclick="window.location.href='appointments.html'">Start</button></td>
+          </tr>`).join('');
+      }
+
+      if (data.recent_patients?.length) {
+        document.getElementById('recent-patients').innerHTML = data.recent_patients.slice(0,5).map(p => `
+          <div class="flex items-center gap-3" style="padding:10px 0;border-bottom:1px solid var(--border);">
+            <div class="p-avatar" style="width:38px;height:38px;font-size:16px;">👤</div>
+            <div style="flex:1;"><div class="fw-600">${p.name}</div><div class="text-xs text-muted">${p.age || '—'} yrs · ${p.last_visit ? fmtDate(p.last_visit) : 'First visit'}</div></div>
+            <button class="btn btn-secondary btn-sm" onclick="window.location.href='patients.html'">View</button>
+          </div>`).join('');
+      }
+
+      if (data.pending_lab_orders?.length) {
+        document.getElementById('pending-labs').innerHTML = data.pending_lab_orders.slice(0,4).map(l => `
+          <div class="flex justify-between items-center" style="padding:10px 0;border-bottom:1px solid var(--border);">
+            <div><div class="fw-600">${l.test_name}</div><div class="text-xs text-muted">Patient: ${l.patient_name}</div></div>
+            <span class="badge badge-warning">Pending</span>
+          </div>`).join('');
+      }
+    } catch (err) { console.error('Dashboard load failed:', err.message); }
+  }
+
+  loadDashboard();
+</script>
+</body>
+</html>

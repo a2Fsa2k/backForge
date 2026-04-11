@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Billing — MediConnect Doctor</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="logo-brand"><span class="logo-icon">🩺</span> MediConnect</div><div class="logo-sub">Doctor Dashboard</div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-group-label">Main</div>
+      <a href="dashboard.html" class="nav-link"><span class="nav-icon">🏠</span> Dashboard</a>
+      <a href="patients.html" class="nav-link"><span class="nav-icon">👥</span> Patients</a>
+      <a href="appointments.html" class="nav-link"><span class="nav-icon">📅</span> Appointments</a>
+      <div class="nav-group-label">Clinical</div>
+      <a href="prescriptions.html" class="nav-link"><span class="nav-icon">💊</span> Prescriptions</a>
+      <a href="medical-records.html" class="nav-link"><span class="nav-icon">📁</span> Medical Records</a>
+      <a href="lab-orders.html" class="nav-link"><span class="nav-icon">🔬</span> Lab Orders</a>
+      <a href="telemedicine.html" class="nav-link"><span class="nav-icon">📹</span> Telemedicine</a>
+      <div class="nav-group-label">Practice</div>
+      <a href="schedule.html" class="nav-link"><span class="nav-icon">📆</span> Schedule</a>
+      <a href="billing.html" class="nav-link active"><span class="nav-icon">💳</span> Billing</a>
+      <a href="profile.html" class="nav-link"><span class="nav-icon">👤</span> Profile</a>
+      <a href="notifications.html" class="nav-link"><span class="nav-icon">🔔</span> Notifications</a>
+    </nav>
+    <div class="sidebar-footer"><div class="sidebar-user" onclick="logout()"><div class="s-avatar" id="sidebar-avatar">D</div><div><div class="s-user-name" id="sidebar-user-name">Dr. Doctor</div><div class="s-user-role">Sign out →</div></div></div></div>
+  </aside>
+
+  <main class="main-content">
+    <header class="top-bar">
+      <div class="top-bar-title">Billing</div>
+      <div class="top-bar-actions">
+        <button class="btn btn-primary btn-sm" onclick="openModal('createInvoiceModal')">+ Generate Invoice</button>
+        <button class="icon-btn" onclick="window.location.href='notifications.html'">🔔</button>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <!-- Revenue Stats -->
+      <div class="stats-grid" style="margin-bottom:22px;">
+        <div class="stat-card"><div class="stat-icon si-green">💰</div><div><div class="stat-val" id="s-total">—</div><div class="stat-lbl">Total Revenue</div></div></div>
+        <div class="stat-card"><div class="stat-icon si-blue">📅</div><div><div class="stat-val" id="s-month">—</div><div class="stat-lbl">This Month</div></div></div>
+        <div class="stat-card"><div class="stat-icon si-orange">⏳</div><div><div class="stat-val" id="s-pending">—</div><div class="stat-lbl">Pending</div></div></div>
+        <div class="stat-card"><div class="stat-icon si-red">🔴</div><div><div class="stat-val" id="s-overdue">—</div><div class="stat-lbl">Overdue</div></div></div>
+      </div>
+
+      <!-- Filter -->
+      <div class="filter-bar">
+        <div class="search-wrap"><span class="search-icon">🔍</span><input type="text" id="searchInput" placeholder="Search invoices…" /></div>
+        <select class="form-control" id="statusFilter" style="width:auto;min-width:160px;" onchange="loadBills()">
+          <option value="">All</option><option value="pending">Pending</option><option value="paid">Paid</option><option value="overdue">Overdue</option>
+        </select>
+        <select class="form-control" id="patientFilter" style="width:auto;min-width:200px;" onchange="loadBills()">
+          <option value="">All Patients</option>
+        </select>
+        <button class="btn btn-secondary" onclick="loadBills()">Filter</button>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">Invoices</span></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Invoice #</th><th>Patient</th><th>Description</th><th>Amount</th><th>Due Date</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="bills-tbody">
+              <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted);">No invoices found</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Create Invoice Modal -->
+<div class="modal-overlay" id="createInvoiceModal">
+  <div class="modal modal-lg">
+    <div class="modal-header"><span class="modal-title">Generate Invoice</span><button class="modal-close" onclick="closeModal('createInvoiceModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Patient</label><select class="form-control" id="inv-patient"><option value="">Select patient…</option></select></div>
+        <div class="form-group"><label class="form-label">Linked Appointment (optional)</label><select class="form-control" id="inv-appointment"><option value="">None</option></select></div>
+      </div>
+      <div class="fw-700 mb-3">Line Items</div>
+      <div id="invoice-items">
+        <div style="display:grid;grid-template-columns:3fr 1fr 1fr auto;gap:8px;margin-bottom:6px;padding:0 8px;">
+          <span class="text-xs text-muted fw-700" style="text-transform:uppercase;">Description</span>
+          <span class="text-xs text-muted fw-700" style="text-transform:uppercase;">Qty</span>
+          <span class="text-xs text-muted fw-700" style="text-transform:uppercase;">Amount (₹)</span>
+          <span></span>
+        </div>
+      </div>
+      <button class="btn btn-outline btn-sm mt-4" onclick="addItem()" style="margin-top:8px;">+ Add Item</button>
+      <div class="divider"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Due Date</label><input type="date" class="form-control" id="inv-due" /></div>
+        <div class="form-group"><label class="form-label">Tax %</label><input type="number" class="form-control" id="inv-tax" value="0" min="0" max="30" /></div>
+      </div>
+      <div class="form-group"><label class="form-label">Notes for Patient</label><input type="text" class="form-control" id="inv-notes" placeholder="e.g. Payment due within 7 days…" /></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('createInvoiceModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitInvoice()">Generate Invoice</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="js/app.js"></script>
+<script>
+  function logout() { auth.clear(); window.location.href = 'index.html'; }
+  let itemCount = 0;
+
+  function addItem(desc = '', qty = 1, amt = '') {
+    itemCount++;
+    const div = document.createElement('div');
+    div.id = `item-${itemCount}`;
+    div.style.cssText = 'display:grid;grid-template-columns:3fr 1fr 1fr auto;gap:8px;margin-bottom:8px;';
+    div.innerHTML = `
+      <input type="text" class="form-control" name="item_desc" placeholder="e.g. Consultation fee" value="${desc}" />
+      <input type="number" class="form-control" name="item_qty" value="${qty}" min="1" />
+      <input type="number" class="form-control" name="item_amt" placeholder="500" value="${amt}" />
+      <button class="btn btn-danger btn-sm" onclick="document.getElementById('item-${itemCount}').remove()">✕</button>`;
+    document.getElementById('invoice-items').appendChild(div);
+  }
+
+  async function loadPatientOptions() {
+    try {
+      const data = await GET('/doctor/patients');
+      const pts = Array.isArray(data) ? data : data.patients || [];
+      const opts = pts.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+      document.getElementById('inv-patient').innerHTML = '<option value="">Select patient…</option>' + opts;
+      document.getElementById('patientFilter').innerHTML = '<option value="">All Patients</option>' + opts;
+    } catch {}
+  }
+
+  // GET /api/doctor/billing?status=&patient_id=
+  async function loadBills() {
+    const status = document.getElementById('statusFilter').value;
+    const patient = document.getElementById('patientFilter').value;
+    const search = document.getElementById('searchInput').value;
+    try {
+      const data = await GET(`/doctor/billing?status=${status}&patient_id=${patient}&search=${encodeURIComponent(search)}`);
+      const bills = Array.isArray(data) ? data : data.bills || [];
+
+      const total = bills.reduce((s, b) => s + b.amount, 0);
+      const month = new Date().getMonth();
+      const thisMonth = bills.filter(b => new Date(b.date).getMonth() === month).reduce((s, b) => s + b.amount, 0);
+      const pending = bills.filter(b => b.status === 'pending').reduce((s, b) => s + b.amount, 0);
+      const overdue = bills.filter(b => b.status === 'overdue').reduce((s, b) => s + b.amount, 0);
+
+      document.getElementById('s-total').textContent = `₹${total}`;
+      document.getElementById('s-month').textContent = `₹${thisMonth}`;
+      document.getElementById('s-pending').textContent = `₹${pending}`;
+      document.getElementById('s-overdue').textContent = `₹${overdue}`;
+
+      document.getElementById('bills-tbody').innerHTML = bills.length
+        ? bills.map(b => `
+          <tr>
+            <td class="fw-700">#${b.invoice_no || b.id}</td>
+            <td>${b.patient_name}</td>
+            <td>${b.description || b.items?.[0]?.name || '—'}</td>
+            <td class="fw-700 text-primary">₹${b.amount}</td>
+            <td class="fw-600 ${b.status === 'overdue' ? 'text-danger' : ''}">${fmtDate(b.due_date)}</td>
+            <td><span class="badge ${b.status === 'paid' ? 'badge-success' : b.status === 'overdue' ? 'badge-danger' : 'badge-warning'}">${b.status}</span></td>
+            <td>
+              <div style="display:flex;gap:6px;">
+                <button class="btn btn-secondary btn-sm" onclick="viewInvoice(${b.id})">View</button>
+                ${b.status !== 'paid' ? `<button class="btn btn-success btn-sm" onclick="markPaid(${b.id})">Mark Paid</button>` : ''}
+              </div>
+            </td>
+          </tr>`).join('')
+        : '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted);">No invoices</td></tr>';
+    } catch (err) { toast(err.message, 'error'); }
+  }
+
+  // POST /api/doctor/billing
+  async function submitInvoice() {
+    const patient = document.getElementById('inv-patient').value;
+    if (!patient) { toast('Select a patient', 'error'); return; }
+    const rows = document.querySelectorAll('#invoice-items > div[id^=item-]');
+    const items = Array.from(rows).map(r => ({
+      name: r.querySelector('[name=item_desc]').value,
+      qty: parseInt(r.querySelector('[name=item_qty]').value) || 1,
+      amount: parseFloat(r.querySelector('[name=item_amt]').value) || 0
+    })).filter(i => i.name);
+    if (!items.length) { toast('Add at least one item', 'error'); return; }
+    try {
+      await POST('/doctor/billing', {
+        patient_id: patient,
+        appointment_id: document.getElementById('inv-appointment').value || null,
+        items,
+        tax_percent: parseFloat(document.getElementById('inv-tax').value) || 0,
+        due_date: document.getElementById('inv-due').value,
+        notes: document.getElementById('inv-notes').value
+      });
+      closeModal('createInvoiceModal');
+      toast('Invoice generated!', 'success');
+      loadBills();
+    } catch (err) { toast(err.message || 'Failed', 'error'); }
+  }
+
+  // PUT /api/doctor/billing/:id/status
+  async function markPaid(id) {
+    try {
+      await PUT(`/doctor/billing/${id}/status`, { status: 'paid' });
+      toast('Marked as paid', 'success');
+      loadBills();
+    } catch (err) { toast(err.message, 'error'); }
+  }
+
+  async function viewInvoice(id) {
+    try {
+      const b = await GET(`/doctor/billing/${id}`);
+      toast(`Invoice #${b.invoice_no || id}: ₹${b.amount} — ${b.status}`, 'default');
+    } catch {}
+  }
+
+  addItem('Consultation Fee', 1, '');
+  loadPatientOptions();
+  loadBills();
+  document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') loadBills(); });
+</script>
+</body>
+</html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Doctor Login — MediConnect</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="auth-page">
+  <div class="auth-box">
+
+    <!-- Left Panel -->
+    <div class="auth-left">
+      <div class="auth-brand">
+        <span class="auth-brand-icon">🩺</span>
+        <div>
+          <div class="auth-brand-name">MediConnect</div>
+          <div class="auth-brand-sub">Doctor Dashboard</div>
+        </div>
+      </div>
+      <h2>Manage your practice, effortlessly.</h2>
+      <p>Access patient records, manage appointments, write prescriptions, and conduct telemedicine consultations — all in one secure platform.</p>
+      <div class="auth-feats">
+        <div class="auth-feat"><span class="af-icon">👥</span> Complete patient management</div>
+        <div class="auth-feat"><span class="af-icon">📅</span> Smart appointment scheduling</div>
+        <div class="auth-feat"><span class="af-icon">💊</span> Digital prescription writing</div>
+        <div class="auth-feat"><span class="af-icon">📹</span> Telemedicine consultations</div>
+        <div class="auth-feat"><span class="af-icon">🔬</span> Lab order management</div>
+      </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="auth-right">
+      <h3>Welcome, Doctor</h3>
+      <p>Sign in to your professional dashboard</p>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-control" id="email" placeholder="doctor@hospital.com" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" class="form-control" id="password" placeholder="Enter your password" required />
+        </div>
+        <div class="flex justify-between items-center mb-4" style="font-size:13px;margin-bottom:16px;">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+            <input type="checkbox" /> Remember me
+          </label>
+          <a href="#" style="color:var(--primary);font-weight:600;">Forgot password?</a>
+        </div>
+        <button type="submit" class="btn btn-primary w-full btn-lg">Sign In</button>
+      </form>
+
+      <!-- Demo Credentials Box -->
+      <div style="margin-top:20px;padding:16px;background:#F0FDF4;border-radius:10px;border:1.5px dashed #6EE7B7;">
+        <div style="font-size:11px;font-weight:700;color:#059669;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">🎯 Demo Credentials (No backend needed)</div>
+        <div style="font-size:13px;color:var(--text);margin-bottom:10px;">
+          <div style="margin-bottom:4px;">📧 <strong>doctor@demo.com</strong></div>
+          <div>🔒 <strong>demo123</strong></div>
+        </div>
+        <button class="btn btn-primary w-full" onclick="fillDemo()">Use Demo Credentials →</button>
+      </div>
+
+      <div style="margin-top:12px;padding:16px;background:var(--bg);border-radius:10px;">
+        <div style="font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">New Doctor?</div>
+        <p style="font-size:13px;color:var(--text-light);margin-bottom:10px;">Registration requires verification by hospital admin.</p>
+        <button class="btn btn-outline w-full" onclick="toast('Please contact your hospital admin to register.','warning')">Request Registration</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="js/app.js"></script>
+<script>
+  function requireAuth() {}
+
+  const DEMO_EMAIL = 'doctor@demo.com';
+  const DEMO_PASS  = 'demo123';
+  const DEMO_USER  = { id: 1, name: 'Arjun Sharma', specialty: 'General Medicine', email: DEMO_EMAIL };
+
+  function fillDemo() {
+    document.getElementById('email').value = DEMO_EMAIL;
+    document.getElementById('password').value = DEMO_PASS;
+    toast('Demo credentials filled — click Sign In', 'default');
+  }
+
+  // POST /api/doctor/auth/login
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type=submit]');
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    // ── DEMO BYPASS (no backend required) ──
+    if (email === DEMO_EMAIL && password === DEMO_PASS) {
+      auth.setToken('demo-token');
+      auth.setUser(DEMO_USER);
+      toast('Demo login successful!', 'success');
+      setTimeout(() => window.location.href = 'dashboard.html', 700);
+      return;
+    }
+
+    btn.textContent = 'Signing in…'; btn.disabled = true;
+    try {
+      const data = await POST('/doctor/auth/login', { email, password });
+      auth.setToken(data.token);
+      auth.setUser(data.doctor);
+      toast('Login successful!', 'success');
+      setTimeout(() => window.location.href = 'dashboard.html', 900);
+    } catch (err) {
+      toast(err.message || 'Invalid credentials', 'error');
+      btn.textContent = 'Sign In'; btn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
