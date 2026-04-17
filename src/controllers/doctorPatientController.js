@@ -39,7 +39,7 @@ async function listPatients(req, res) {
     const out = patients.map(p => {
       const a = apptMap.get(p._id.toString()) || {};
       return {
-        id: p._id,
+        id: p._id.toString(),
         name: p.name,
         email: p.email,
         phone: p.phone,
@@ -71,7 +71,7 @@ async function getPatient(req, res) {
 
     // UI expects embedded prescriptions and records arrays; not implemented in Phase 1.
     return ok(res, {
-      id: patient._id,
+      id: patient._id.toString(),
       name: patient.name,
       email: patient.email,
       phone: patient.phone,
@@ -81,7 +81,7 @@ async function getPatient(req, res) {
       weight: patient.weight,
       allergies: patient.allergies,
       conditions: patient.conditions,
-      appointments: appointments.map(a => ({ id: a._id, date: a.date, time: a.time, status: a.status })),
+      appointments: appointments.map(a => ({ id: a._id.toString(), date: a.date, time: a.time, status: a.status })),
       prescriptions: [],
       records: []
     });

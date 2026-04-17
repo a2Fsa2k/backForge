@@ -101,12 +101,7 @@
         </div>
       </div>
       <div class="form-group"><label class="form-label">Tests to Order</label>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:12px;background:var(--bg);border-radius:8px;">
-          ${['CBC (Complete Blood Count)','Blood Glucose - Fasting','HbA1c','Lipid Profile','Liver Function Test (LFT)','Kidney Function Test (KFT)','Thyroid (TSH, T3, T4)','Urine Routine Analysis','Chest X-Ray','ECG','COVID-19 RT-PCR','Blood Culture','Vitamin D','Vitamin B12','Iron Studies'].map(t => `
-            <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">
-              <input type="checkbox" name="test" value="${t}" /> ${t}
-            </label>`).join('')}
-        </div>
+        <div id="lo-tests" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:12px;background:var(--bg);border-radius:8px;"></div>
       </div>
       <div class="form-group"><label class="form-label">Additional / Custom Tests</label><input type="text" class="form-control" id="lo-custom" placeholder="e.g. Dengue NS1 antigen, comma-separated…" /></div>
       <div class="form-group"><label class="form-label">Clinical Notes for Lab</label><textarea class="form-control" id="lo-notes" rows="2" placeholder="Any special instructions for the lab…"></textarea></div>
@@ -134,6 +129,37 @@
 <script src="js/app.js"></script>
 <script>
   function logout() { auth.clear(); window.location.href = 'index.html'; }
+
+  function renderLabTestOptions() {
+    const tests = [
+      'CBC (Complete Blood Count)',
+      'Blood Glucose - Fasting',
+      'HbA1c',
+      'Lipid Profile',
+      'Liver Function Test (LFT)',
+      'Kidney Function Test (KFT)',
+      'Thyroid (TSH, T3, T4)',
+      'Urine Routine Analysis',
+      'Chest X-Ray',
+      'ECG',
+      'COVID-19 RT-PCR',
+      'Blood Culture',
+      'Vitamin D',
+      'Vitamin B12',
+      'Iron Studies'
+    ];
+
+    const wrap = document.getElementById('lo-tests');
+    if (!wrap) return;
+    wrap.innerHTML = tests
+      .map(
+        t => `
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">
+            <input type="checkbox" name="test" value="${t}" /> ${t}
+          </label>`
+      )
+      .join('');
+  }
 
   async function loadPatientOptions() {
     try {
@@ -217,6 +243,7 @@
   loadOrders('pending', 'pending-tbody');
   loadOrders('ready', 'ready-tbody');
   loadOrders('all', 'all-tbody');
+  renderLabTestOptions();
   loadPatientOptions();
 </script>
 </body>

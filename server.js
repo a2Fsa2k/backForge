@@ -17,6 +17,8 @@ const doctorPrescriptionRoutes = require('./src/routes/doctorPrescriptionRoutes'
 const doctorBillingRoutes = require('./src/routes/doctorBillingRoutes');
 const doctorRecordRoutes = require('./src/routes/doctorRecordRoutes');
 const doctorProfileRoutes = require('./src/routes/doctorProfileRoutes');
+const doctorNotificationRoutes = require('./src/routes/doctorNotificationRoutes');
+const demoRoutes = require('./src/routes/demoRoutes');
 
 const app = express();
 
@@ -41,6 +43,8 @@ app.use('/api/doctor/prescriptions', doctorPrescriptionRoutes);
 app.use('/api/doctor/billing', doctorBillingRoutes);
 app.use('/api/doctor/records', doctorRecordRoutes);
 app.use('/api/doctor/profile', doctorProfileRoutes);
+app.use('/api/doctor/notifications', doctorNotificationRoutes);
+app.use('/api/demo', demoRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

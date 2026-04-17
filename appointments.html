@@ -138,9 +138,9 @@
       <td><span class="pill">${a.consultation_type || 'In-clinic'}</span></td>
       <td class="text-muted" style="max-width:160px;">${a.reason || '—'}</td>
       <td><div style="display:flex;gap:6px;">
-        <button class="btn btn-success btn-sm" onclick="updateStatus(${a.id},'confirmed')">✓ Accept</button>
-        <button class="btn btn-danger btn-sm" onclick="updateStatus(${a.id},'cancelled')">✕ Reject</button>
-        <button class="btn btn-secondary btn-sm" onclick="viewAppt(${a.id})">View</button>
+        <button class="btn btn-success btn-sm" onclick="updateStatus('${a.id}','confirmed')">✓ Accept</button>
+        <button class="btn btn-danger btn-sm" onclick="updateStatus('${a.id}','cancelled')">✕ Reject</button>
+        <button class="btn btn-secondary btn-sm" onclick="viewAppt('${a.id}')">View</button>
       </div></td></tr>`;
     if (type === 'confirmed') return `<tr>
       <td><div class="fw-600">${a.patient_name}</div></td>
@@ -148,8 +148,8 @@
       <td><span class="pill">${a.consultation_type || 'In-clinic'}</span></td>
       <td><span class="badge badge-blue">Confirmed</span></td>
       <td><div style="display:flex;gap:6px;">
-        <button class="btn btn-primary btn-sm" onclick="updateStatus(${a.id},'completed')">Complete</button>
-        <button class="btn btn-secondary btn-sm" onclick="openReschedule(${a.id})">Reschedule</button>
+        <button class="btn btn-primary btn-sm" onclick="updateStatus('${a.id}','completed')">Complete</button>
+        <button class="btn btn-secondary btn-sm" onclick="openReschedule('${a.id}')">Reschedule</button>
       </div></td></tr>`;
     if (type === 'completed') return `<tr>
       <td><div class="fw-600">${a.patient_name}</div></td>
@@ -215,9 +215,9 @@
         <div class="form-group"><div class="fw-700 text-sm mb-2">Patient Notes</div><textarea class="form-control" id="appt-notes" rows="3" placeholder="Add consultation notes…">${a.notes || ''}</textarea></div>`;
       document.getElementById('apptModalFooter').innerHTML = `
         <button class="btn btn-secondary" onclick="closeModal('apptModal')">Close</button>
-        ${a.status === 'pending' ? `<button class="btn btn-success" onclick="updateStatus(${a.id},'confirmed');closeModal('apptModal')">Accept</button>` : ''}
-        ${a.status === 'confirmed' ? `<button class="btn btn-primary" onclick="updateStatus(${a.id},'completed');closeModal('apptModal')">Mark Completed</button>` : ''}
-        <button class="btn btn-blue" onclick="saveNotes(${a.id})">Save Notes</button>`;
+        ${a.status === 'pending' ? `<button class="btn btn-success" onclick="updateStatus('${a.id}','confirmed');closeModal('apptModal')">Accept</button>` : ''}
+        ${a.status === 'confirmed' ? `<button class="btn btn-primary" onclick="updateStatus('${a.id}','completed');closeModal('apptModal')">Mark Completed</button>` : ''}
+        <button class="btn btn-blue" onclick="saveNotes('${a.id}')">Save Notes</button>`;
     } catch (err) {
       document.getElementById('apptModalBody').innerHTML = `<p class="text-danger">${err.message}</p>`;
     }

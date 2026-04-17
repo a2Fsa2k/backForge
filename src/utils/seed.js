@@ -1,9 +1,26 @@
 const bcrypt = require('bcryptjs');
+const mongoose = require('mongoose');
 const Doctor = require('../models/Doctor');
 const Patient = require('../models/Patient');
 const Appointment = require('../models/Appointment');
 const Prescription = require('../models/Prescription');
 const Invoice = require('../models/Invoice');
+const Notification = require('../models/Notification');
+
+async function resetSeedData() {
+  // Fully wipe the current database (all collections) then re-seed.
+  // WARNING: This deletes EVERYTHING in the DB pointed to by MONGO_URI.
+  const db = mongoose.connection?.db;
+  if (!db) throw new Error('MongoDB not connected');
+
+  const cols = await db.listCollections().toArray();
+  await Promise.all(
+    cols
+      .map(c => c.name)
+      .filter(name => name && !name.startsWith('system.'))
+      .map(name => db.collection(name).deleteMany({}))
+  );
+}
 
 async function ensureSeedData() {
   // Demo doctor (matches frontend demo user identity)
@@ -24,9 +41,14 @@ async function ensureSeedData() {
     });
   }
 
-  const patientCount = await Patient.countDocuments({ doctorId: doctor._id });
-  if (patientCount === 0) {
-    const pts = await Patient.insertMany([
+  const today = new Date();
+  const yyyyMmDd = today.toISOString().slice(0, 10);
+
+  // Ensure demo patients exist
+  let pts = await Patient.find({ doctorId: doctor._id }).sort({ createdAt: 1 }).limit(2).lean();
+  if (pts.length < 2) {
+    await Patient.deleteMany({ doctorId: doctor._id });
+    pts = await Patient.insertMany([
       {
         doctorId: doctor._id,
         name: 'Riya Patel',
@@ -52,10 +74,11 @@ async function ensureSeedData() {
         conditions: 'Hypertension'
       }
     ]);
+  }
 
-    const today = new Date();
-    const yyyyMmDd = today.toISOString().slice(0, 10);
-
+  // Ensure at least 1 appointment for each of the 2 patients exists for today
+  const apptCountToday = await Appointment.countDocuments({ doctorId: doctor._id, date: yyyyMmDd });
+  if (apptCountToday === 0) {
     await Appointment.insertMany([
       {
         doctorId: doctor._id,
@@ -80,8 +103,11 @@ async function ensureSeedData() {
         status: 'confirmed'
       }
     ]);
+  }
 
-    // Seed one prescription and one invoice
+  // Seed one prescription and one invoice (if missing)
+  const rxCount = await Prescription.countDocuments({ doctorId: doctor._id });
+  if (rxCount === 0) {
     await Prescription.create({
       doctorId: doctor._id,
       patientId: pts[0]._id,
@@ -95,7 +121,10 @@ async function ensureSeedData() {
       valid_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       status: 'active'
     });
+  }
 
+  const invCount = await Invoice.countDocuments({ doctorId: doctor._id });
+  if (invCount === 0) {
     await Invoice.create({
       doctorId: doctor._id,
       patientId: pts[0]._id,
@@ -110,6 +139,19 @@ async function ensureSeedData() {
       status: 'pending'
     });
   }
+
+  // If patients already exist, still ensure at least 1 notification exists for demo
+  const notifCount = await Notification.countDocuments({ doctorId: doctor._id });
+  if (notifCount === 0) {
+    await Notification.create({
+      doctorId: doctor._id,
+      type: 'system',
+      title: 'Welcome to MediConnect',
+      message: 'Your dashboard backend is connected and ready.',
+      is_read: false,
+      created_at: new Date()
+    });
+  }
 }
 
-module.exports = { ensureSeedData };
+module.exports = { ensureSeedData, resetSeedData };

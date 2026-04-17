@@ -122,8 +122,8 @@
           <td class="fw-600">${p.total_visits || 0}</td>
           <td>
             <div style="display:flex;gap:6px;">
-              <button class="btn btn-secondary btn-sm" onclick="viewPatient(${p.id})">View</button>
-              <button class="btn btn-primary btn-sm" onclick="selectedPatientId=${p.id};window.location.href='prescriptions.html'">Prescribe</button>
+              <button class="btn btn-secondary btn-sm" onclick="viewPatient('${p.id}')">View</button>
+              <button class="btn btn-primary btn-sm" onclick="selectedPatientId='${p.id}';window.location.href='prescriptions.html'">Prescribe</button>
             </div>
           </td>
         </tr>`).join('');

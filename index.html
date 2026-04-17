@@ -93,15 +93,6 @@
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
 
-    // ── DEMO BYPASS (no backend required) ──
-    if (email === DEMO_EMAIL && password === DEMO_PASS) {
-      auth.setToken('demo-token');
-      auth.setUser(DEMO_USER);
-      toast('Demo login successful!', 'success');
-      setTimeout(() => window.location.href = 'dashboard.html', 700);
-      return;
-    }
-
     btn.textContent = 'Signing in…'; btn.disabled = true;
     try {
       const data = await POST('/doctor/auth/login', { email, password });
