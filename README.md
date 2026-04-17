@@ -12,6 +12,16 @@ This repo is optimized for **hackathon demos**: simple to run, predictable seed 
 * **Database:** MongoDB Atlas (Mongoose)
 * **Auth:** JWT (Bearer token)
 * **Uploads:** Multer (Medical Records)
+* **Validation:** Joi (request validation middleware)
+* **Security:** Helmet, XSS sanitization, Mongo operator sanitization
+* **Access Control:** RBAC (role-based access control)
+
+---
+
+## Runtime / Deployment Notes
+
+* **Node version:** pinned to **20.x** via `package.json` `engines` (recommended for compatibility on hosts like Render).
+* **MongoDB Atlas Network Access:** your cluster must allow connections from your host IP(s). For demos you can temporarily allow `0.0.0.0/0`.
 
 ---
 
@@ -19,12 +29,19 @@ This repo is optimized for **hackathon demos**: simple to run, predictable seed 
 
 ### 1) Configure env
 
-Create `.env` (or use your existing one):
+Create `.env` in the repo root:
 
 * `PORT=8000`
 * `MONGO_URI=...`
-* `JWT_SECRET=change-me-in-production`
+* `JWT_SECRET=...` (**use a long random secret in production**)
 * `CORS_ORIGIN=*`
+* `NODE_ENV=development`
+
+**JWT_SECRET (production):** do **not** use placeholder values. Generate a strong secret (example):
+
+```bash
+openssl rand -base64 64
+```
 
 ### 2) Install + run backend
 
@@ -64,8 +81,28 @@ Use these credentials on `index.html`:
 
 What happens in the backend:
 1. Password is validated using **bcrypt**.
-2. A **JWT** is issued (contains `doctor_id`).
+2. A **JWT** is issued (contains `doctor_id` and `role`).
 3. Frontend stores JWT and sends it via `Authorization: Bearer <token>`.
+
+---
+
+## RBAC (Role-Based Access Control)
+
+Doctors have a `role` field: `user | admin | demo`.
+
+* Most doctor dashboard endpoints are available to any authenticated doctor.
+* Sensitive endpoints can be protected at the **route layer** using RBAC middleware.
+
+**Demo reset is RBAC-protected:** `POST /api/demo/reset` requires role `demo` or `admin`.
+
+---
+
+## Input Validation
+
+Request payloads/params are validated using **Joi** via a shared `validate(...)` middleware.
+
+* Safe + non-breaking: does not change successful response formats.
+* Invalid inputs return `400` with `{ success:false, message: ... }`.
 
 ---
 
@@ -73,7 +110,7 @@ What happens in the backend:
 
 ### Automatic seed
 On server start, the backend ensures demo data exists:
-* Demo doctor
+* Demo doctor (role: `demo`)
 * 2 demo patients
 * 2 appointments (1 pending + 1 confirmed for today)
 * 1 prescription
@@ -86,6 +123,8 @@ To restore the DB back to the original fresh demo state:
 * `POST /api/demo/reset`
 
 This will **wipe the database collections** and re-seed the demo dataset.
+
+> Note: reset is restricted to the demo/admin role and additionally guarded in the controller to the demo account.
 
 ---
 
@@ -108,6 +147,18 @@ This will **wipe the database collections** and re-seed the demo dataset.
 ✅ Profile view/update + password change
 
 ✅ Notifications list + mark read + mark all read + delete
+
+---
+
+## Basic Testing
+
+Lightweight Jest + Supertest tests live under `tests/`.
+
+Run:
+
+```bash
+npm test
+```
 
 ---
 
