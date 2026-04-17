@@ -2,6 +2,8 @@ const bcrypt = require('bcryptjs');
 const Doctor = require('../models/Doctor');
 const Patient = require('../models/Patient');
 const Appointment = require('../models/Appointment');
+const Prescription = require('../models/Prescription');
+const Invoice = require('../models/Invoice');
 
 async function ensureSeedData() {
   // Demo doctor (matches frontend demo user identity)
@@ -78,6 +80,35 @@ async function ensureSeedData() {
         status: 'confirmed'
       }
     ]);
+
+    // Seed one prescription and one invoice
+    await Prescription.create({
+      doctorId: doctor._id,
+      patientId: pts[0]._id,
+      appointmentId: null,
+      patient_name: pts[0].name,
+      diagnosis: 'Viral fever',
+      medicines: [
+        { name: 'Paracetamol', dosage: '500mg', frequency: 'Twice daily', duration: '3 days' }
+      ],
+      instructions: 'Take after meals',
+      valid_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      status: 'active'
+    });
+
+    await Invoice.create({
+      doctorId: doctor._id,
+      patientId: pts[0]._id,
+      appointmentId: null,
+      patient_name: pts[0].name,
+      invoice_no: `INV-${Date.now()}`,
+      items: [{ name: 'Consultation Fee', qty: 1, amount: 500 }],
+      tax_percent: 0,
+      notes: 'Payment due within 7 days',
+      amount: 500,
+      due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      status: 'pending'
+    });
   }
 }
 

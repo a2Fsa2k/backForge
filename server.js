@@ -12,6 +12,11 @@ const { ensureSeedData } = require('./src/utils/seed');
 const doctorAuthRoutes = require('./src/routes/doctorAuthRoutes');
 const doctorPatientRoutes = require('./src/routes/doctorPatientRoutes');
 const doctorAppointmentRoutes = require('./src/routes/doctorAppointmentRoutes');
+const doctorDashboardRoutes = require('./src/routes/doctorDashboardRoutes');
+const doctorPrescriptionRoutes = require('./src/routes/doctorPrescriptionRoutes');
+const doctorBillingRoutes = require('./src/routes/doctorBillingRoutes');
+const doctorRecordRoutes = require('./src/routes/doctorRecordRoutes');
+const doctorProfileRoutes = require('./src/routes/doctorProfileRoutes');
 
 const app = express();
 
@@ -29,8 +34,13 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.get('/api/health', (req, res) => res.json({ success: true, data: { status: 'ok' } }));
 
 app.use('/api/doctor/auth', doctorAuthRoutes);
+app.use('/api/doctor/dashboard', doctorDashboardRoutes);
 app.use('/api/doctor/patients', doctorPatientRoutes);
 app.use('/api/doctor/appointments', doctorAppointmentRoutes);
+app.use('/api/doctor/prescriptions', doctorPrescriptionRoutes);
+app.use('/api/doctor/billing', doctorBillingRoutes);
+app.use('/api/doctor/records', doctorRecordRoutes);
+app.use('/api/doctor/profile', doctorProfileRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

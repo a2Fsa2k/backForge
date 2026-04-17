@@ -51,7 +51,8 @@ async function listPatients(req, res) {
       };
     });
 
-    // Frontend accepts array OR {patients:[]}. We'll return wrapped in data.
+    // Frontend expects either an array, OR { patients: [...] }.
+    // We return { patients } and ok() will include it at top-level as well.
     return ok(res, { patients: out });
   } catch (err) {
     return fail(res, err.message || 'Failed to load patients', 500);

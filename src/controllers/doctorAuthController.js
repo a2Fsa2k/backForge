@@ -21,9 +21,7 @@ async function login(req, res) {
     if (!match) return fail(res, 'Invalid credentials', 401);
 
     const token = signToken(doctor);
-    return ok(res, {
-      // IMPORTANT: frontend expects { token, doctor } not nested under data.
-      // But we must follow the rule: success wrapper. We'll include both.
+    const payload = {
       token,
       doctor: {
         id: doctor._id,
@@ -31,7 +29,10 @@ async function login(req, res) {
         email: doctor.email,
         specialty: doctor.specialty || null
       }
-    });
+    };
+
+    // ok() will also spread token/doctor to top-level
+    return ok(res, payload);
   } catch (err) {
     return fail(res, err.message || 'Login failed', 500);
   }
