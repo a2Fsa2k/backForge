@@ -6,6 +6,8 @@ const doctorSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     passwordHash: { type: String, required: true, select: false },
 
+    role: { type: String, enum: ['user', 'admin', 'demo'], default: 'user', index: true },
+
     specialty: { type: String, default: null },
     phone: { type: String, default: null },
     hospital: { type: String, default: null },

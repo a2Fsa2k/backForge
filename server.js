@@ -4,10 +4,13 @@ const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
+const helmet = require('helmet');
+const xss = require('xss-clean');
 
 const { connectDB } = require('./src/utils/db');
 const { notFound, errorHandler } = require('./src/middlewares/error');
 const { ensureSeedData } = require('./src/utils/seed');
+const { sanitize } = require('./src/middlewares/sanitize');
 
 const doctorAuthRoutes = require('./src/routes/doctorAuthRoutes');
 const doctorPatientRoutes = require('./src/routes/doctorPatientRoutes');
@@ -26,6 +29,12 @@ const app = express();
 app.set('trust proxy', 1);
 
 app.use(cors({ origin: process.env.CORS_ORIGIN || '*', credentials: false }));
+
+// Basic security hardening (safe defaults)
+app.use(helmet({ crossOriginResourcePolicy: false }));
+app.use(sanitize);
+app.use(xss());
+
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));

@@ -32,6 +32,7 @@ async function ensureSeedData() {
       name: 'Arjun Sharma',
       email: demoEmail,
       passwordHash,
+      role: 'demo',
       specialty: 'General Medicine',
       phone: '9999999999',
       hospital: 'MediConnect General Hospital',

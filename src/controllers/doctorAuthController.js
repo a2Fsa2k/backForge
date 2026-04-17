@@ -6,7 +6,7 @@ const { ok, fail } = require('../utils/respond');
 
 function signToken(doctor) {
   const secret = process.env.JWT_SECRET || 'dev-secret';
-  return jwt.sign({ doctor_id: doctor._id.toString() }, secret, { expiresIn: '7d' });
+  return jwt.sign({ doctor_id: doctor._id.toString(), role: doctor.role || 'user' }, secret, { expiresIn: '7d' });
 }
 
 async function login(req, res) {
@@ -27,7 +27,8 @@ async function login(req, res) {
         id: doctor._id,
         name: doctor.name,
         email: doctor.email,
-        specialty: doctor.specialty || null
+        specialty: doctor.specialty || null,
+        role: doctor.role || 'user'
       }
     };
 
@@ -47,7 +48,8 @@ async function me(req, res) {
         id: doctor._id,
         name: doctor.name,
         email: doctor.email,
-        specialty: doctor.specialty || null
+        specialty: doctor.specialty || null,
+        role: doctor.role || 'user'
       }
     });
   } catch (err) {
