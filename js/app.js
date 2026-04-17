@@ -7,7 +7,15 @@
    All API endpoints documented below for backend teams.
    ============================================================ */
 
-const API = 'http://localhost:8000/api';
+// API base URL
+// - For Vercel: set NEXT_PUBLIC_API_BASE=https://backforge.onrender.com
+// - Fallback: Render backend
+// We then always append '/api' in one place.
+const API_BASE = (typeof window !== 'undefined' && window.__API_BASE__) ||
+  (typeof process !== 'undefined' && process.env && process.env.NEXT_PUBLIC_API_BASE) ||
+  'https://backforge.onrender.com';
+
+const API = API_BASE.replace(/\/$/, '') + '/api';
 
 /* ============================================================
    API ENDPOINT REFERENCE — DOCTOR PORTAL
