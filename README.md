@@ -70,6 +70,22 @@ Then open:
 
 ---
 
+## What’s Innovative / Hackathon‑Ready Improvements
+
+This repo is not just a CRUD API — it’s built to be **judge-friendly, resilient, and production-leaning** while keeping the frontend contract stable.
+
+* **One‑command live demo runner (NEW):** `./run_demo.sh` starts backend + resets DB + starts static frontend server.
+* **One‑command teardown (NEW):** `./stop_demo.sh` stops both servers cleanly.
+* **Safe demo DB reset (NEW):** `POST /api/demo/reset` wipes collections and re-seeds predictable demo data.
+* **Seed data designed for walkthroughs (NEW):** always guarantees dashboard has patients/appointments/prescription/invoice/notifications.
+* **Contract‑first backend (NEW):** responses match the static frontend expectations (no breaking response shape changes).
+* **Security hardening (NEW):** Helmet + XSS cleaning + NoSQL operator sanitization + password hashing via bcrypt.
+* **Validation layer (NEW):** Joi validation added at the route layer (fails fast with clear 400 errors).
+* **RBAC (NEW):** roles (`user|admin|demo`) and middleware-based authorization for sensitive routes.
+* **Lightweight tests (NEW):** Jest + Supertest smoke tests for critical endpoints.
+
+---
+
 ## Demo Login (for Judges)
 
 Use these credentials on `index.html`:
